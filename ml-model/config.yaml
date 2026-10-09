@@ -1,0 +1,67 @@
+area_of_interest:
+  locality: "[LOCALITY]" # ASSUMPTION: replace with the selected locality.
+  bbox: null # ASSUMPTION: set [west, south, east, north] in EPSG:4326.
+  metric_crs: null # ASSUMPTION: set a projected CRS suitable for the locality.
+
+paths:
+  dem: data/raw/dem.tif # ASSUMPTION: provide a documented DEM at this path.
+  labels: data/raw/labels.geojson # ASSUMPTION: provide documented labels before training.
+  roads: data/raw/roads.geojson # ASSUMPTION: provide OSM roads or a supplied road file.
+  processed: data/processed
+  output: artifacts/export
+  artifacts: artifacts
+
+thresholds:
+  low_max: 25.0 # ASSUMPTION: score category boundary, not a probability.
+  moderate_max: 50.0 # ASSUMPTION: score category boundary, not a probability.
+  high_max: 75.0 # ASSUMPTION: score category boundary, not a probability.
+  min_positive_samples: 100 # ASSUMPTION: minimum documented positive labels to train.
+  min_negative_samples: 100 # ASSUMPTION: minimum weak negative labels to train.
+
+scoring:
+  weights: # ASSUMPTION: initial uncalibrated baseline weights; must sum to 1.
+    low_elevation: 0.25
+    local_relief: 0.15
+    slope: 0.10
+    flow_accumulation: 0.20
+    rainfall: 0.30
+  normalization: # ASSUMPTION: min/max clipping bounds for the baseline score.
+    low_elevation: [0.0, 100.0]
+    local_relief: [0.0, 10.0]
+    slope: [0.0, 30.0]
+    flow_accumulation: [0.0, 1000.0]
+    rainfall: [0.0, 115.0]
+
+terrain:
+  local_relief_radius_m: 100.0 # ASSUMPTION: neighborhood radius.
+  sink_depth_m: 0.5 # ASSUMPTION: minimum depression depth for sink detection.
+  simplify_tolerance_m: 2.0 # ASSUMPTION: polygon simplification tolerance.
+
+scenarios:
+  - id: light
+    label: Light rainfall
+    mm_per_hr: 7.5
+    assumption: "ASSUMPTION: fixed exploratory rainfall rate; not a forecast."
+  - id: moderate
+    label: Moderate rainfall
+    mm_per_hr: 35.0
+    assumption: "ASSUMPTION: fixed exploratory rainfall rate; not a forecast."
+  - id: heavy
+    label: Heavy rainfall
+    mm_per_hr: 65.0
+    assumption: "ASSUMPTION: fixed exploratory rainfall rate; not a forecast."
+  - id: extreme
+    label: Extreme rainfall
+    mm_per_hr: 115.0
+    assumption: "ASSUMPTION: fixed exploratory rainfall rate; not a forecast."
+
+inundation:
+  mode: fixed_levels # ASSUMPTION: fixed_levels or volume_balance.
+  fixed_water_levels_m: null # ASSUMPTION: set levels only after DEM inspection.
+  runoff_coefficient: 0.5 # ASSUMPTION: uncalibrated volume-balance parameter.
+  max_water_depth_m: 2.0 # ASSUMPTION: cap for optional volume-balance mode.
+
+training:
+  random_seed: 42 # ASSUMPTION: reproducibility seed, not a performance claim.
+  spatial_block_size_m: 500.0 # ASSUMPTION: spatial cross-validation block size.
+  allow_baseline_fallback: false # ASSUMPTION: opt in before using baseline fallback.

@@ -1,0 +1,43 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --color-paper: theme("colors.paper");
+  --color-rule: theme("colors.rule");
+  --color-accent: theme("colors.accent");
+  --color-risk-low: theme("colors.risk.low");
+  --color-risk-moderate: theme("colors.risk.moderate");
+  --color-risk-high: theme("colors.risk.high");
+  --color-risk-severe: theme("colors.risk.severe");
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-size: 14px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  min-width: 320px;
+  min-height: 100vh;
+  margin: 0;
+}
+
+button,
+a {
+  -webkit-tap-highlight-color: transparent;
+}
+
+button {
+  cursor: pointer;
+}
+
+::selection {
+  background-color: theme("colors.water.1");
+  color: theme("colors.ink");
+}

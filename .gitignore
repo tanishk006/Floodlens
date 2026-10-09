@@ -1,0 +1,11 @@
+node_modules
+dist
+.env
+.env.*
+!.env.example
+/ml-model/artifacts/*
+!/ml-model/artifacts/.gitkeep
+/ml-model/data/raw/*
+!/ml-model/data/raw/.gitkeep
+/ml-model/data/processed/*
+!/ml-model/data/processed/.gitkeep
