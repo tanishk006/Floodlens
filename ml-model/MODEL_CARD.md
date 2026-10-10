@@ -88,3 +88,22 @@ The prototype identifies ten candidate monitoring zones in India:
 3. **No Fluvial / Riverine Dynamics:** Riverbank overtopping, levee breaches, and tidal backwater surges are not simulated.
 4. **Scenario Assumptions:** Rainfall inputs represent static, exploratory intensity rates in mm/hour, not spatial radar observations or meteorological forecast ensembles.
 5. **No Empirical Validation:** No confusion matrix, precision, recall, or calibration curves are reported because no documented flood observations are present in the repository.
+
+---
+
+## Data Sourcing Policy & Google Maps Platform Restrictions
+
+To ensure strict legal, ethical, and scientific compliance:
+
+1. **Google Maps Platform Prohibition:**
+   - **Do not** use Google Maps, Google Maps Platform APIs, Google Maps imagery, Places results, Directions results, Elevation API outputs, or other Google Maps content as training, testing, validation, or feature-generation data for FloodLens.
+   - **Do not** scrape or bulk-download Google Maps content, trace geographic features from Google Maps satellite imagery, or derive terrain models from Google Maps elevation values.
+2. **Approved Independent Data Sources:**
+   - **Terrain & Elevation:** NASA SRTM (Shuttle Radar Topography Mission) 30m DEM or other documented, openly licensed digital elevation models.
+   - **Base Geography & Roads:** OpenStreetMap (OSM) under ODbL license.
+   - **Meteorological Data:** Open meteorological observations from the India Meteorological Department (IMD) or accessible atmospheric datasets.
+   - **Historical Waterlogging:** Verified municipal open datasets and civic engineering reports.
+3. **Mapping Technology:**
+   - MapLibre GL JS is used directly for client-side map rendering. Google Maps Platform content must not be mixed into the MapLibre map without verifying that the specific use is permitted by applicable terms.
+4. **No Fabricated Training Labels:**
+   - Reliable historical flood event labels are not currently connected; therefore, FloodLens maintains a transparent baseline rule-based susceptibility model. No artificial or hallucinated labels are used to train an ML model.

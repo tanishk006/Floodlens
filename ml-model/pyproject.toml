@@ -1,3 +1,22 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "floodlens-ml"
+version = "0.1.0"
+description = "FloodLens geospatial risk estimation and modeling package"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "pydantic>=2.9.0",
+    "pyyaml>=6.0",
+    "numpy>=2.0",
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["src"]

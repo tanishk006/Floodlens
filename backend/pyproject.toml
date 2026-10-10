@@ -1,6 +1,6 @@
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-pythonpath = ["."]
+pythonpath = [".", "../ml-model/src"]
 
 [tool.ruff]
 target-version = "py311"
