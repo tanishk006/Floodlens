@@ -171,7 +171,7 @@ describe("FloodLens App Component", () => {
     render(<App />);
 
     expect(screen.getByText("FloodLens")).toBeDefined();
-    expect(screen.getByText("Street-Level Flood Risk Intelligence")).toBeDefined();
+    expect(screen.getByText("Regional Flood Susceptibility Screening")).toBeDefined();
     expect(
       screen.getAllByText("Experimental estimate. Not an official warning.").length
     ).toBeGreaterThan(0);
@@ -277,5 +277,51 @@ describe("FloodLens App Component", () => {
     await waitFor(() => {
       expect(screen.getByText(/NWP ATMOSPHERIC FORCING INTELLIGENCE/i)).toBeDefined();
     });
+  });
+
+  it("protects against stale responses when switching candidate zones rapidly", async () => {
+    let resolveFirstZone: (value: RiskScoreResult) => void;
+    const firstZonePromise = new Promise<RiskScoreResult>((resolve) => {
+      resolveFirstZone = resolve;
+    });
+
+    const secondZoneResult: RiskScoreResult = {
+      ...mockEstimateModerate,
+      zone_id: "zone-bihar",
+      locality: "Bihar Monitoring Zone",
+      risk_index: 42.5,
+      risk_category: "moderate",
+    };
+
+    vi.spyOn(client, "estimateRisk").mockImplementation(async (req) => {
+      if (req.zone_id === "zone-uttar-pradesh") {
+        return firstZonePromise;
+      }
+      return secondZoneResult;
+    });
+
+    render(<App />);
+
+    await waitFor(() => {
+      expect(screen.getByText("Bihar")).toBeDefined();
+    });
+
+    // Quickly switch to Bihar before Uttar Pradesh request resolves
+    const biharBtn = screen.getByRole("button", { name: /Bihar/i });
+    fireEvent.click(biharBtn);
+
+    // Now resolve the older, in-flight Uttar Pradesh request
+    resolveFirstZone!({
+      ...mockEstimateModerate,
+      zone_id: "zone-uttar-pradesh",
+      locality: "Stale Uttar Pradesh Result",
+      risk_index: 99.9,
+    });
+
+    // Ensure the active display shows Bihar and does NOT get overwritten by stale UP response
+    await waitFor(() => {
+      expect(screen.getByRole("heading", { name: "Bihar Monitoring Zone" })).toBeDefined();
+    });
+    expect(screen.queryByText("Stale Uttar Pradesh Result")).toBeNull();
   });
 });

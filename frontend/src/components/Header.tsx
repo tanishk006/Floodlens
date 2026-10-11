@@ -36,7 +36,7 @@ export default function Header({
               FloodLens
             </span>
             <span className="hidden md:inline-block text-xs text-text-muted border-l border-border-subtle pl-3 ml-1 font-normal">
-              Street-Level Flood Risk Intelligence
+              Regional Flood Susceptibility Screening
             </span>
           </button>
 

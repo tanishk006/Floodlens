@@ -285,9 +285,26 @@ export default function FloodMap({
 
     const handleClick = (e: any) => {
       if (!e.features || e.features.length === 0) return;
-      const zId = e.features[0].properties?.zone_id;
+      const feat = e.features[0];
+      const zId = feat.properties?.zone_id;
       if (zId) {
         onSelectZone(zId);
+        const zone = zones.find((z) => z.id === zId);
+        if (zone) {
+          setHoveredZone({
+            id: zone.id,
+            name: zone.name,
+            state: zone.state,
+            severity: feat.properties?.severity_label || feat.properties?.severity || "Unknown",
+            riskIndex:
+              feat.properties?.risk_index != null
+                ? Number(feat.properties.risk_index)
+                : null,
+            dataStatus: zone.data_status,
+            x: e.point.x,
+            y: e.point.y,
+          });
+        }
       }
     };
 
@@ -350,7 +367,7 @@ export default function FloodMap({
       const isSelected = zone.id === selectedZoneId;
       const hasVerifiedData = zone.data_status === "verified";
       const risk = zoneRisks[zone.id];
-      const severity = risk?.risk_category ?? (hasVerifiedData ? "moderate" : "insufficient_data");
+      const severity = risk?.risk_category ?? "insufficient_data";
       const style = getSeverityStyle(severity);
 
       // Marker container
@@ -378,7 +395,7 @@ export default function FloodMap({
         dot.style.backgroundColor = "#cc9c00"; // Gold accent
         dot.style.border = "2px solid #fff3cc";
         dot.style.boxShadow = "0 1px 4px rgba(0,0,0,0.7)";
-      } else if (hasVerifiedData) {
+      } else if (hasVerifiedData && risk && risk.risk_category !== "insufficient_data") {
         dot.style.backgroundColor = style.fillColor;
         dot.style.border = `1.5px solid ${style.borderColor}`;
       } else {

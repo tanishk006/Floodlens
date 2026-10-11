@@ -88,7 +88,7 @@ export default function Methodology({ riskResult }: MethodologyProps) {
       title: "Interactive Geospatial Intelligence",
       tech: "React 18 / MapLibre GL / Poppins / Tailwind",
       description:
-        "Street-level decision support UI providing real-time slider-driven rainfall scenario lab, contextual factor explainability, and cartographic visual intelligence.",
+        "Zone-level screening interface providing real-time slider-driven rainfall scenario lab, contextual factor explainability, and cartographic visual intelligence.",
     },
   ];
 

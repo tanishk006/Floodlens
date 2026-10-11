@@ -75,6 +75,33 @@ def test_valid_risk_request_insufficient_data() -> None:
         assert len(result.limitations) >= 4
 
 
+def test_unverified_zone_with_custom_rainfall_maintains_insufficient_data() -> None:
+    client = TestClient(create_app())
+    from floodlens_ml.schemas import CandidateZone
+
+    unverified = CandidateZone(
+        id="zone-unverified-custom",
+        name="Test Custom Unverified Zone",
+        state="Test State",
+        coordinates=(78.0, 21.0),
+        data_status="insufficient_data",
+    )
+    with patch("app.services.risk.find_candidate_zone_by_id", return_value=unverified):
+        payload = {
+            "zone_id": "zone-unverified-custom",
+            "scenario_id": "moderate",
+            "rainfall_mm_per_hour": 55.0,
+        }
+        response = client.post("/api/risk/estimate", json=payload)
+        assert response.status_code == 200
+        data = response.json()
+        result = RiskScoreResult.model_validate(data)
+        assert result.risk_index is None
+        assert result.risk_category == "insufficient_data"
+        assert result.data_quality.status == "insufficient_data"
+        assert len(result.data_quality.missing_inputs) >= 4
+
+
 def test_valid_risk_request_custom_rainfall() -> None:
     client = TestClient(create_app())
     payload = {

@@ -33,3 +33,15 @@ def test_cors_headers_on_risk_estimate() -> None:
     assert (
         response.headers.get("access-control-allow-origin") == "http://localhost:5173"
     )
+
+
+def test_cors_settings_parsing_comma_separated_string() -> None:
+    from app.core.config import Settings
+
+    settings = Settings(
+        cors_origins="https://app.floodlens.io, https://staging.floodlens.io"  # type: ignore[arg-type]
+    )
+    assert settings.cors_origins == [
+        "https://app.floodlens.io",
+        "https://staging.floodlens.io",
+    ]

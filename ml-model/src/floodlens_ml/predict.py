@@ -137,6 +137,9 @@ def evaluate_candidate_zone(
         flow_accumulation=None,
         rainfall_mm_per_hour=scenario.rainfall_mm_per_hour,
     )
+    target_status = (
+        "illustrative" if zone.data_status == "illustrative" else "available"
+    )
     return calculate_risk_score(
         features=empty_features,
         scenario=scenario,
@@ -144,6 +147,6 @@ def evaluate_candidate_zone(
         zone_id=zone.id,
         locality=zone.name,
         coordinates=zone.coordinates,
-        data_status="available",
+        data_status=target_status,
         sources=zone.sources,
     )

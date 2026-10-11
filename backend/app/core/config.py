@@ -1,8 +1,10 @@
 """Environment-backed application settings."""
 
+import json
 from functools import lru_cache
 from pathlib import Path
 
+from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -15,6 +17,35 @@ class Settings(BaseSettings):
         "http://127.0.0.1:5173",
     ]
     model_config_path: str = "ml-model/config.yaml"
+
+    @field_validator("cors_origins", mode="before")
+    @classmethod
+    def parse_cors_origins(cls, value: object) -> list[str]:
+        if isinstance(value, str):
+            val = value.strip()
+            if val.startswith("[") and val.endswith("]"):
+                try:
+                    parsed = json.loads(val)
+                    if isinstance(parsed, list):
+                        return [
+                            str(item).strip()
+                            for item in parsed
+                            if str(item).strip()
+                        ]
+                except Exception:
+                    pass
+            return [
+                origin.strip()
+                for origin in val.split(",")
+                if origin.strip()
+            ]
+        if isinstance(value, list):
+            return [
+                str(origin).strip()
+                for origin in value
+                if str(origin).strip()
+            ]
+        return []
 
     model_config = SettingsConfigDict(
         env_file=".env",

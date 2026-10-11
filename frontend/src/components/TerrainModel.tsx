@@ -520,7 +520,7 @@ export default function TerrainModel({
             {isVerified ? (
               <span className="flex items-center gap-1.5 text-dust-grey-200">
                 <span className="w-1.5 h-1.5 rounded-full bg-accent" />
-                Copernicus DEM GLO-30 Model
+                Illustrative Relief (Copernicus DEM GLO-30 Metrics)
               </span>
             ) : (
               <span className="flex items-center gap-1.5 text-text-muted">
