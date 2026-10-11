@@ -4,19 +4,102 @@
 
 @layer base {
   :root {
-    --color-surface: #0B1120;
-    --color-surface-raised: #111827;
-    --color-surface-overlay: #1A2332;
-    --color-surface-border: #1E293B;
-    --color-accent: #22D3EE;
-    --color-accent-dim: #0EA5C9;
-    --color-text-primary: #F1F5F9;
-    --color-text-secondary: #94A3B8;
-    --color-risk-low: #34D399;
-    --color-risk-moderate: #FBBF24;
-    --color-risk-high: #F97316;
-    --color-risk-severe: #EF4444;
-    --color-risk-insufficient: #64748B;
+    /* Floral White (warm golden accent) */
+    --floral-white-50: #fff9e5;
+    --floral-white-100: #fff3cc;
+    --floral-white-200: #ffe799;
+    --floral-white-300: #ffdb66;
+    --floral-white-400: #ffcf33;
+    --floral-white-500: #ffc300;
+    --floral-white-600: #cc9c00;
+    --floral-white-700: #997500;
+    --floral-white-800: #664e00;
+    --floral-white-900: #332700;
+    --floral-white-950: #241b00;
+
+    /* Dust Grey (neutral surfaces, secondary text, separators, muted map labels) */
+    --dust-grey-50: #f4f3f0;
+    --dust-grey-100: #eae7e1;
+    --dust-grey-200: #d4cec4;
+    --dust-grey-300: #bfb6a6;
+    --dust-grey-400: #a99d89;
+    --dust-grey-500: #94856b;
+    --dust-grey-600: #766a56;
+    --dust-grey-700: #595040;
+    --dust-grey-800: #3b352b;
+    --dust-grey-900: #1e1b15;
+    --dust-grey-950: #15130f;
+
+    /* Charcoal Brown (elevated panels, secondary cards, borders, sidebar, muted controls) */
+    --charcoal-brown-50: #f3f2f1;
+    --charcoal-brown-100: #e7e6e4;
+    --charcoal-brown-200: #cfccc9;
+    --charcoal-brown-300: #b7b3ae;
+    --charcoal-brown-400: #9f9a93;
+    --charcoal-brown-500: #878178;
+    --charcoal-brown-600: #6c6760;
+    --charcoal-brown-700: #514d48;
+    --charcoal-brown-800: #363330;
+    --charcoal-brown-900: #1b1a18;
+    --charcoal-brown-950: #131211;
+
+    /* Carbon Black (primary background, nav shell, map surroundings) */
+    --carbon-black-50: #f3f2f2;
+    --carbon-black-100: #e7e6e4;
+    --carbon-black-200: #cecdca;
+    --carbon-black-300: #b6b4af;
+    --carbon-black-400: #9d9a95;
+    --carbon-black-500: #85817a;
+    --carbon-black-600: #6a6762;
+    --carbon-black-700: #504e49;
+    --carbon-black-800: #353431;
+    --carbon-black-900: #1b1a18;
+    --carbon-black-950: #131211;
+
+    /* Spicy Paprika (restrained warning accent) */
+    --spicy-paprika-50: #fdeee8;
+    --spicy-paprika-100: #fbdcd0;
+    --spicy-paprika-200: #f6baa2;
+    --spicy-paprika-300: #f29773;
+    --spicy-paprika-400: #ee7444;
+    --spicy-paprika-500: #e95216;
+    --spicy-paprika-600: #bb4111;
+    --spicy-paprika-700: #8c310d;
+    --spicy-paprika-800: #5d2109;
+    --spicy-paprika-900: #2f1004;
+    --spicy-paprika-950: #210b03;
+
+    /* Semantic tokens (defined separately from palette) */
+    --app-bg: #131211;
+    --surface-primary: #1b1a18;
+    --surface-secondary: #1e1b15;
+    --surface-elevated: #24211c;
+    --border-subtle: #363330;
+    --border-strong: #514d48;
+    --text-primary: #f4f3f0;
+    --text-secondary: #b7b3ae;
+    --text-muted: #878178;
+    --accent-primary: #cc9c00;
+    --accent-emphasis: #ffc300;
+    --accent-text: #fff3cc;
+    --warning-primary: #bb4111;
+    --warning-soft: #5d2109;
+    --focus-ring: #ffcf33;
+
+    /* Legacy CSS Variable Compatibility */
+    --color-surface: var(--app-bg);
+    --color-surface-raised: var(--surface-primary);
+    --color-surface-overlay: var(--surface-elevated);
+    --color-surface-border: var(--border-subtle);
+    --color-accent: var(--accent-primary);
+    --color-accent-dim: #997500;
+    --color-text-primary: var(--text-primary);
+    --color-text-secondary: var(--text-secondary);
+    --color-risk-low: #766a56;
+    --color-risk-moderate: var(--accent-primary);
+    --color-risk-high: var(--warning-primary);
+    --color-risk-severe: #8c310d;
+    --color-risk-insufficient: #514d48;
   }
 
   *,
@@ -29,147 +112,151 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
-    scroll-behavior: smooth;
+    background-color: var(--app-bg);
+    color: var(--text-primary);
   }
 
   body {
     margin: 0;
-    background-color: var(--color-surface);
-    color: var(--color-text-primary);
-    font-family: "Inter", system-ui, sans-serif;
+    background-color: var(--app-bg);
+    color: var(--text-primary);
+    font-family: "Poppins", system-ui, -apple-system, sans-serif;
     line-height: 1.5;
   }
 
-  ::selection {
-    background-color: rgba(34, 211, 238, 0.25);
-    color: #F1F5F9;
+  /* Accessible focus indicators */
+  :focus-visible {
+    outline: 2px solid var(--focus-ring);
+    outline-offset: 1px;
   }
 
-  /* Scrollbar styling */
+  ::selection {
+    background-color: var(--floral-white-900);
+    color: var(--floral-white-100);
+  }
+
+  /* Quiet scrollbars */
   ::-webkit-scrollbar {
     width: 6px;
     height: 6px;
   }
 
   ::-webkit-scrollbar-track {
-    background: transparent;
+    background: var(--app-bg);
   }
 
   ::-webkit-scrollbar-thumb {
-    background: #1E293B;
+    background: var(--border-subtle);
     border-radius: 3px;
   }
 
   ::-webkit-scrollbar-thumb:hover {
-    background: #334155;
+    background: var(--border-strong);
   }
 }
 
 @layer components {
-  /* Skeleton loading animation */
+  /* Static, calm placeholder indicator (No pulsing or blinking) */
   .skeleton {
-    background: linear-gradient(
-      90deg,
-      #1A2332 25%,
-      #243044 50%,
-      #1A2332 75%
-    );
-    background-size: 200% 100%;
-    animation: skeleton-pulse 1.5s ease-in-out infinite;
-    border-radius: 2px;
+    background-color: var(--surface-secondary);
+    border: 1px solid var(--border-subtle);
+    border-radius: 3px;
   }
 
-  @keyframes skeleton-pulse {
-    0% { background-position: 200% 0; }
-    100% { background-position: -200% 0; }
-  }
-
-  /* Risk category badge colors */
+  /* Restrained risk category badge styles */
   .risk-badge-low {
-    background-color: rgba(52, 211, 153, 0.12);
-    color: #34D399;
-    border: 1px solid rgba(52, 211, 153, 0.25);
+    background-color: var(--surface-secondary);
+    color: var(--dust-grey-300);
+    border: 1px solid var(--dust-grey-700);
   }
 
   .risk-badge-moderate {
-    background-color: rgba(251, 191, 36, 0.12);
-    color: #FBBF24;
-    border: 1px solid rgba(251, 191, 36, 0.25);
+    background-color: var(--floral-white-950);
+    color: var(--floral-white-300);
+    border: 1px solid var(--floral-white-800);
   }
 
   .risk-badge-high {
-    background-color: rgba(249, 115, 22, 0.12);
-    color: #F97316;
-    border: 1px solid rgba(249, 115, 22, 0.25);
+    background-color: var(--spicy-paprika-900);
+    color: var(--spicy-paprika-200);
+    border: 1px solid var(--spicy-paprika-700);
   }
 
   .risk-badge-severe {
-    background-color: rgba(239, 68, 68, 0.12);
-    color: #EF4444;
-    border: 1px solid rgba(239, 68, 68, 0.25);
+    background-color: var(--spicy-paprika-950);
+    color: var(--spicy-paprika-100);
+    border: 1px solid var(--spicy-paprika-600);
   }
 
   .risk-badge-insufficient {
-    background-color: rgba(100, 116, 139, 0.12);
-    color: #94A3B8;
-    border: 1px solid rgba(100, 116, 139, 0.25);
+    background-color: var(--surface-primary);
+    color: var(--text-muted);
+    border: 1px solid var(--border-subtle);
   }
 }
 
-/* MapLibre GL overrides */
+/* MapLibre GL Overrides — Calm Earthy GIS Styling */
 .maplibregl-ctrl-group {
-  background: #111827 !important;
-  border: 1px solid #1E293B !important;
+  background: var(--surface-primary) !important;
+  border: 1px solid var(--border-subtle) !important;
   border-radius: 4px !important;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3) !important;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4) !important;
 }
 
 .maplibregl-ctrl-group button {
-  border-color: #1E293B !important;
+  border-color: var(--border-subtle) !important;
+  background-color: var(--surface-primary) !important;
 }
 
 .maplibregl-ctrl-group button + button {
-  border-top: 1px solid #1E293B !important;
+  border-top: 1px solid var(--border-subtle) !important;
 }
 
 .maplibregl-ctrl-group button:hover {
-  background-color: #1A2332 !important;
+  background-color: var(--surface-elevated) !important;
 }
 
 .maplibregl-ctrl-group button .maplibregl-ctrl-icon {
-  filter: invert(0.85);
+  filter: invert(0.8) sepia(0.2);
 }
 
 .maplibregl-popup-content {
-  background: #111827 !important;
-  color: #F1F5F9 !important;
-  border: 1px solid #1E293B !important;
+  background: var(--surface-elevated) !important;
+  color: var(--text-primary) !important;
+  border: 1px solid var(--border-strong) !important;
   border-radius: 4px !important;
   padding: 10px 14px !important;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4) !important;
-  font-family: "Inter", system-ui, sans-serif !important;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.6) !important;
+  font-family: "Poppins", sans-serif !important;
   font-size: 12px !important;
 }
 
 .maplibregl-popup-anchor-bottom .maplibregl-popup-tip {
-  border-top-color: #111827 !important;
+  border-top-color: var(--surface-elevated) !important;
 }
 
 .maplibregl-popup-anchor-top .maplibregl-popup-tip {
-  border-bottom-color: #111827 !important;
+  border-bottom-color: var(--surface-elevated) !important;
 }
 
 .maplibregl-popup-close-button {
-  color: #94A3B8 !important;
+  color: var(--text-secondary) !important;
   font-size: 16px !important;
+  padding: 4px !important;
 }
 
 .maplibregl-popup-close-button:hover {
-  color: #22D3EE !important;
+  color: var(--accent-emphasis) !important;
   background: transparent !important;
 }
 
-/* Reduced motion */
+.maplibregl-compact {
+  background-color: var(--surface-primary) !important;
+  color: var(--text-muted) !important;
+  border: 1px solid var(--border-subtle) !important;
+}
+
+/* Strict Reduced Motion */
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -177,5 +264,6 @@
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }

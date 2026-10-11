@@ -19,22 +19,23 @@ export default function ZonePanel({
   const selectedZone = zones.find((z) => z.id === selectedZoneId);
 
   return (
-    <section className="border-b border-surface-border">
+    <section className="border-b border-border-subtle bg-surface-primary">
       {/* Selected zone header */}
       <div className="px-4 py-3">
         <div className="flex items-center justify-between mb-2">
-          <span className="text-2xs font-data text-text-muted uppercase tracking-wider">
+          <span className="text-2xs font-mono text-text-muted uppercase tracking-wider">
             Monitoring Zone
           </span>
           <div className="flex items-center gap-2">
             {zones.length > 0 && (
-              <span className="text-2xs font-data text-text-muted">
+              <span className="text-2xs font-mono text-text-muted">
                 {zones.length} candidate zones loaded
               </span>
             )}
             <button
+              type="button"
               onClick={() => setExpanded(!expanded)}
-              className="text-2xs font-medium text-accent hover:text-accent-dim transition-colors"
+              className="text-2xs font-medium text-accent hover:text-accent-emphasis transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-accent rounded px-1"
               aria-expanded={expanded}
             >
               {expanded ? "Collapse" : `All ${zones.length} zones`}
@@ -43,7 +44,7 @@ export default function ZonePanel({
         </div>
 
         {isLoading ? (
-          <div className="space-y-2">
+          <div className="space-y-2 py-1">
             <div className="skeleton h-5 w-48" />
             <div className="skeleton h-3 w-32" />
           </div>
@@ -52,48 +53,54 @@ export default function ZonePanel({
             <h2 className="font-display font-semibold text-text-primary text-base leading-tight">
               {selectedZone.name}
             </h2>
-            <div className="flex items-center gap-2 mt-1">
-              <span className="font-data text-2xs text-text-muted">
+            <div className="flex items-center gap-2 mt-1.5">
+              <span className="font-mono text-2xs text-text-muted">
                 [{selectedZone.coordinates[0].toFixed(4)},{" "}
                 {selectedZone.coordinates[1].toFixed(4)}]
               </span>
               <StatusBadge status={selectedZone.data_status} />
+              {selectedZone.notes && (
+                <span className="text-2xs text-text-muted truncate max-w-[160px] hidden sm:inline" title={selectedZone.notes}>
+                  · {selectedZone.notes}
+                </span>
+              )}
             </div>
           </div>
         ) : (
-          <p className="text-sm text-text-muted">Select a zone from the map</p>
+          <p className="text-xs text-text-muted">Select a zone from the map</p>
         )}
       </div>
 
       {/* Expanded zone list */}
       {expanded && (
-        <div className="border-t border-surface-border max-h-64 overflow-y-auto animate-fade-in">
+        <div className="border-t border-border-subtle max-h-60 overflow-y-auto">
           {zones.map((zone) => {
             const isActive = zone.id === selectedZoneId;
             return (
               <button
                 key={zone.id}
+                type="button"
                 onClick={() => {
                   onSelectZone(zone.id);
                   setExpanded(false);
                 }}
-                className={`w-full text-left px-4 py-2.5 flex items-center justify-between transition-colors border-b border-surface-border/50 ${
+                className={`w-full text-left px-4 py-2.5 flex items-center justify-between transition-colors border-b border-border-subtle/50 ${
                   isActive
-                    ? "bg-accent/8 text-accent"
-                    : "hover:bg-surface-overlay text-text-secondary hover:text-text-primary"
+                    ? "bg-floral-white-950 text-accent-text border-l-2 border-l-accent"
+                    : "hover:bg-surface-elevated text-text-secondary hover:text-text-primary"
                 }`}
               >
                 <div className="flex items-center gap-2.5 min-w-0">
                   <span
-                    className={`w-2 h-2 rounded-full flex-shrink-0 ${
-                      isActive ? "bg-accent" : "bg-text-disabled"
+                    className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${
+                      isActive ? "bg-accent" : "bg-charcoal-brown-600"
                     }`}
                   />
                   <div className="min-w-0">
                     <span className="text-xs font-medium block truncate">
                       {zone.state}
                     </span>
-                    <span className="text-2xs text-text-muted font-data block">
+                    <span className="text-2xs text-text-muted font-mono block">
                       [{zone.coordinates[0].toFixed(2)},{" "}
                       {zone.coordinates[1].toFixed(2)}]
                     </span>
@@ -124,7 +131,7 @@ function StatusBadge({ status }: { status: string }) {
 
   return (
     <span
-      className={`inline-flex px-1.5 py-0.5 text-2xs font-data rounded-xs ${
+      className={`inline-flex px-1.5 py-0.5 text-2xs font-mono rounded ${
         classes[status] || classes.insufficient_data
       }`}
     >

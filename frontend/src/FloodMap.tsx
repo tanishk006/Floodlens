@@ -20,7 +20,7 @@ const FLY_ZOOM = 6.5;
 function createDarkStyle(): StyleSpecification {
   return {
     version: 8,
-    name: "FloodLens CARTO Dark (Fallback)",
+    name: "FloodLens Muted Dark Cartography",
     sources: {
       "carto-dark": {
         type: "raster",
@@ -51,6 +51,9 @@ function createDarkStyle(): StyleSpecification {
         source: "carto-dark",
         minzoom: 0,
         maxzoom: 19,
+        paint: {
+          "raster-opacity": 0.88,
+        },
       },
       {
         id: "carto-labels-layer",
@@ -58,22 +61,13 @@ function createDarkStyle(): StyleSpecification {
         source: "carto-labels",
         minzoom: 0,
         maxzoom: 19,
-        paint: { "raster-opacity": 0.7 },
+        paint: {
+          "raster-opacity": 0.55,
+        },
       },
     ],
     glyphs: "https://fonts.openmaptiles.org/{fontstack}/{range}.pbf",
   };
-}
-
-function getRiskColor(status: string): string {
-  switch (status) {
-    case "verified":
-      return "#34D399";
-    case "illustrative":
-      return "#FBBF24";
-    default:
-      return "#64748B";
-  }
 }
 
 export default function FloodMap({
@@ -129,7 +123,6 @@ export default function FloodMap({
       map.resize();
     });
 
-    // Graceful fallback to CARTO dark if MapTiler style fails to load
     const handleError = (e: any) => {
       console.warn("FloodLens Map notice:", e?.error ?? e);
       if (useMapTiler && basemapProvider === "MapTiler") {
@@ -143,7 +136,6 @@ export default function FloodMap({
     };
     map.on("error", handleError);
 
-    // Dynamic resize observer to handle layout shifts / drawer toggling
     let observer: ResizeObserver | null = null;
     if (typeof ResizeObserver !== "undefined") {
       observer = new ResizeObserver(() => {
@@ -174,7 +166,7 @@ export default function FloodMap({
 
     zones.forEach((zone) => {
       const isSelected = zone.id === selectedZoneId;
-      const color = getRiskColor(zone.data_status);
+      const hasVerifiedData = zone.data_status === "verified";
 
       // Marker container
       const el = document.createElement("div");
@@ -182,52 +174,53 @@ export default function FloodMap({
       el.style.display = "flex";
       el.style.alignItems = "center";
       el.style.gap = "6px";
-      el.style.transition = "transform 0.2s ease";
+      el.style.transition = "transform 0.15s ease";
 
       // Indicator dot
       const dot = document.createElement("div");
-      const size = isSelected ? "14px" : "10px";
+      const size = isSelected ? "12px" : "8px";
       dot.style.width = size;
       dot.style.height = size;
       dot.style.borderRadius = "50%";
-      dot.style.backgroundColor = isSelected ? "#22D3EE" : color;
-      dot.style.border = isSelected ? "2px solid #22D3EE" : `2px solid ${color}`;
-      dot.style.boxShadow = isSelected
-        ? "0 0 14px rgba(34,211,238,0.7)"
-        : `0 0 6px ${color}50`;
-      dot.style.transition = "all 0.2s ease";
 
-      // Label
+      if (isSelected) {
+        dot.style.backgroundColor = "#cc9c00"; // Gold accent
+        dot.style.border = "2px solid #fff3cc";
+        dot.style.boxShadow = "0 1px 4px rgba(0,0,0,0.6)";
+      } else if (hasVerifiedData) {
+        dot.style.backgroundColor = "#94856b"; // Dust grey
+        dot.style.border = "1.5px solid #bfb6a6";
+      } else {
+        dot.style.backgroundColor = "#514d48"; // Charcoal brown
+        dot.style.border = "1.5px solid #6c6760";
+      }
+
+      // Label pill
       const label = document.createElement("div");
       label.textContent = zone.state;
       label.style.fontSize = "11px";
-      label.style.fontFamily = '"Inter", system-ui, sans-serif';
-      label.style.fontWeight = isSelected ? "600" : "500";
-      label.style.color = isSelected ? "#22D3EE" : "#CBD5E1";
+      label.style.fontFamily = '"Poppins", sans-serif';
+      label.style.fontWeight = isSelected ? "600" : "400";
+      label.style.color = isSelected ? "#fff3cc" : "#b7b3ae";
       label.style.backgroundColor = isSelected
-        ? "rgba(17,24,39,0.95)"
-        : "rgba(17,24,39,0.85)";
+        ? "rgba(27,26,24,0.96)"
+        : "rgba(27,26,24,0.85)";
       label.style.padding = "2px 8px";
       label.style.borderRadius = "3px";
       label.style.border = isSelected
-        ? "1px solid rgba(34,211,238,0.4)"
-        : "1px solid rgba(30,41,59,0.8)";
+        ? "1px solid #cc9c00"
+        : "1px solid #363330";
       label.style.whiteSpace = "nowrap";
-      label.style.transition = "all 0.2s ease";
       label.style.letterSpacing = "0.01em";
 
       el.appendChild(dot);
       el.appendChild(label);
 
       el.addEventListener("mouseenter", () => {
-        el.style.transform = "scale(1.08)";
-        dot.style.boxShadow = `0 0 16px ${isSelected ? "rgba(34,211,238,0.8)" : color + "90"}`;
+        el.style.transform = "scale(1.05)";
       });
       el.addEventListener("mouseleave", () => {
         el.style.transform = "scale(1)";
-        dot.style.boxShadow = isSelected
-          ? "0 0 14px rgba(34,211,238,0.7)"
-          : `0 0 6px ${color}50`;
       });
 
       el.addEventListener("click", (e) => {
@@ -258,31 +251,31 @@ export default function FloodMap({
     map.flyTo({
       center: zone.coordinates,
       zoom: Math.max(map.getZoom(), FLY_ZOOM),
-      duration: 1200,
+      duration: 1000,
       essential: true,
     });
   }, [selectedZoneId, zones, mapLoaded]);
 
   if (mapError) {
     return (
-      <div className="h-full flex items-center justify-center bg-surface text-text-secondary text-sm">
-        <div className="text-center">
-          <p className="font-medium text-text-primary mb-1">Map Error</p>
-          <p className="text-xs">{mapError}</p>
+      <div className="h-full flex items-center justify-center bg-surface-primary text-text-secondary text-sm">
+        <div className="text-center p-4">
+          <p className="font-medium text-text-primary mb-1">Map Notice</p>
+          <p className="text-xs text-text-muted">{mapError}</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="relative h-full w-full">
+    <div className="relative h-full w-full bg-[#131211]">
       <div ref={containerRef} className="h-full w-full" />
 
-      {/* Map loading overlay */}
+      {/* Map loading overlay (calm, static, no spinning neon) */}
       {!mapLoaded && (
-        <div className="absolute inset-0 flex items-center justify-center bg-surface/80 z-10">
-          <div className="flex items-center gap-2 text-text-secondary text-sm">
-            <div className="w-4 h-4 border-2 border-accent/30 border-t-accent rounded-full animate-spin" />
+        <div className="absolute inset-0 flex items-center justify-center bg-surface-primary/90 z-10">
+          <div className="flex items-center gap-2 text-text-secondary text-xs font-mono">
+            <span className="w-2 h-2 rounded-full bg-accent" />
             Loading geospatial canvas…
           </div>
         </div>
@@ -292,25 +285,25 @@ export default function FloodMap({
       {mapLoaded && (
         <div className="absolute bottom-3 left-3 z-10 flex flex-col gap-2">
           {/* Legend */}
-          <div className="bg-surface-raised/90 backdrop-blur-md border border-surface-border rounded-md px-3 py-2 text-2xs font-data text-slate-300 shadow-lg space-y-1.5">
-            <div className="text-slate-400 uppercase text-[10px] tracking-wider font-semibold">
+          <div className="bg-surface-primary/95 backdrop-blur-md border border-border-subtle rounded px-3 py-2 text-2xs font-mono text-text-secondary shadow-card space-y-1.5">
+            <div className="text-text-muted uppercase text-[10px] tracking-wider font-semibold">
               Cartographic Legend
             </div>
             <div className="flex items-center gap-3 text-[11px]">
               <span className="flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-cyan-400 shadow-[0_0_8px_#22D3EE]" />
+                <span className="w-2 h-2 rounded-full bg-accent border border-floral-white-200" />
                 Selected Zone
               </span>
               <span className="flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-slate-500" />
+                <span className="w-2 h-2 rounded-full bg-charcoal-brown-500" />
                 DEM Pending (SRTM/Cop-30)
               </span>
             </div>
           </div>
 
           {/* Telemetry info */}
-          <div className="bg-surface-raised/90 backdrop-blur-md border border-surface-border rounded-md px-2.5 py-1 text-[11px] font-mono text-slate-400 inline-flex items-center gap-2">
-            <span>Provider: <strong className="text-cyan-400">{basemapProvider} Dark</strong></span>
+          <div className="bg-surface-primary/95 backdrop-blur-md border border-border-subtle rounded px-2.5 py-1 text-[11px] font-mono text-text-muted inline-flex items-center gap-2 shadow-card">
+            <span>Provider: <strong className="text-text-primary">{basemapProvider} Dark</strong></span>
             <span>·</span>
             <span>{zones.length} Zones (EPSG:4326)</span>
           </div>

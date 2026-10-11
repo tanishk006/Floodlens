@@ -294,11 +294,17 @@ def extract_pilot_terrain_features(
     point_relief = float(relief_grid[center_sub_r, center_sub_c])
     point_flow_acc = float(flow_acc_grid[center_sub_r, center_sub_c])
 
+    # Beven-Kirkby Topographic Wetness Index: ln(a / tan(beta))
+    specific_area = max(1.0, point_flow_acc) * mean_cell_size_m
+    slope_rad = np.radians(max(0.05, point_slope))
+    point_twi = float(np.log(specific_area / np.tan(slope_rad)))
+
     return {
         "elevation_m": round(point_elevation, 2),
         "slope_deg": round(point_slope, 2),
         "local_relief_m": round(point_relief, 2),
         "flow_accumulation": round(point_flow_acc, 2),
+        "topographic_wetness_index": round(point_twi, 2),
         "target_coordinates": [target_lon, target_lat],
         "pixel_row": target_row,
         "pixel_col": target_col,
@@ -334,3 +340,32 @@ def process_terrain_grid(
         "cell_size_m": cell_size_m,
         "grid_shape": elevation_grid.shape,
     }
+
+
+def compute_topographic_wetness_index(
+    flow_accumulation: float | np.ndarray,
+    slope_deg: float | np.ndarray,
+    cell_size_m: float,
+) -> float | np.ndarray:
+    """Compute Beven-Kirkby Topographic Wetness Index: ln(a / tan(beta)).
+
+    Args:
+        flow_accumulation: Contributing upslope cell count (>= 1.0).
+        slope_deg: Surface slope in degrees (0 to 90).
+        cell_size_m: Characteristic grid cell spacing in meters.
+
+    Returns:
+        Topographic wetness index (dimensionless). Higher values indicate
+        valley bottoms, natural drainages, and high moisture accumulation.
+    """
+    if isinstance(flow_accumulation, np.ndarray):
+        specific_area = np.maximum(1.0, flow_accumulation) * cell_size_m
+        slope_rad = np.radians(np.maximum(0.05, slope_deg))
+        tan_beta = np.tan(slope_rad)
+        return np.log(specific_area / tan_beta)
+
+    specific_area = max(1.0, float(flow_accumulation)) * cell_size_m
+    slope_rad = np.radians(max(0.05, float(slope_deg)))
+    tan_beta = np.tan(slope_rad)
+    return round(float(np.log(specific_area / tan_beta)), 2)
+

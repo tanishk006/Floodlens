@@ -247,6 +247,7 @@ def run_terrain_pipeline(
             "slope_deg": extracted["slope_deg"],
             "local_relief_m": extracted["local_relief_m"],
             "flow_accumulation": extracted["flow_accumulation"],
+            "topographic_wetness_index": extracted.get("topographic_wetness_index"),
         },
         "dataset_provenance": tile_provenance,
         "processing_parameters": {
@@ -355,9 +356,14 @@ def main() -> None:
         default="ml-model/data/processed",
         help="Directory for saving processed provenance JSON files",
     )
+    parser.add_argument(
+        "--all",
+        action="store_true",
+        help="Process all registered zones in catalog",
+    )
     args = parser.parse_args()
 
-    if args.zone == "all":
+    if args.all or args.zone == "all":
         summary = run_all_zones(raw_dir=args.raw_dir, processed_dir=args.processed_dir)
         print(json.dumps(summary, indent=2))
     else:

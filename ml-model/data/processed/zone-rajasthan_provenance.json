@@ -7,12 +7,13 @@
     26.9124
   ],
   "data_status": "verified",
-  "processed_at": "2026-10-11T10:39:40.782775+00:00",
+  "processed_at": "2026-10-11T11:51:23.902796+00:00",
   "terrain_features": {
     "elevation_m": 430.51,
     "slope_deg": 4.69,
     "local_relief_m": 8.55,
-    "flow_accumulation": 2.0
+    "flow_accumulation": 2.0,
+    "topographic_wetness_index": 6.57
   },
   "dataset_provenance": {
     "dataset_name": "Copernicus DEM GLO-30",

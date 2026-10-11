@@ -106,7 +106,7 @@ export default function App() {
   };
 
   return (
-    <div className="flex flex-col h-screen overflow-hidden bg-surface">
+    <div className="flex flex-col h-screen overflow-hidden bg-[#131211]">
       <Header
         page={page}
         onNavigate={setPage}
