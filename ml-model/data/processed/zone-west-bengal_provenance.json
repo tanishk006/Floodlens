@@ -1,0 +1,52 @@
+{
+  "zone_id": "zone-west-bengal",
+  "zone_name": "West Bengal Monitoring Zone",
+  "state": "West Bengal",
+  "target_coordinates": [
+    88.3639,
+    22.5726
+  ],
+  "data_status": "verified",
+  "processed_at": "2026-10-11T10:39:56.534787+00:00",
+  "terrain_features": {
+    "elevation_m": 12.33,
+    "slope_deg": 3.54,
+    "local_relief_m": 5.56,
+    "flow_accumulation": 1.0
+  },
+  "dataset_provenance": {
+    "dataset_name": "Copernicus DEM GLO-30",
+    "product_id": "Copernicus_DSM_COG_10_N22_00_E088_00_DEM",
+    "source_url": "https://copernicus-dem-30m.s3.amazonaws.com/Copernicus_DSM_COG_10_N22_00_E088_00_DEM/Copernicus_DSM_COG_10_N22_00_E088_00_DEM.tif",
+    "provider": "European Space Agency (ESA) / AWS Open Data Copernicus DEM",
+    "licence": "Copernicus Sentinel Data Terms / Open Access Public Dataset",
+    "vertical_datum": "EGM2008 geoid (meters)",
+    "horizontal_crs": "EPSG:4326 (WGS84 2D)",
+    "spatial_resolution": "1 arc-second (~30 meters)",
+    "tile_bounds": [
+      88.0,
+      22.0,
+      89.0,
+      23.0
+    ]
+  },
+  "processing_parameters": {
+    "mean_cell_size_m": 29.74,
+    "dy_m": 30.92,
+    "dx_m": 28.55,
+    "raster_pixel_indices": {
+      "row": 1539,
+      "col": 1310
+    },
+    "subcatchment_window_shape": [
+      201,
+      201
+    ],
+    "algorithms": {
+      "hydrology_algorithm": "D8 steepest descent flow routing with Priority-Flood pit conditioning (Barnes et al., 2014)",
+      "local_relief_radius_m": 100.0,
+      "catchment_half_window_cells": 100
+    }
+  },
+  "scientific_notes": "Elevation derived from genuine Copernicus GLO-30 DSM raster. Slope computed using central finite differences on metric grid. Local relief represents elevation difference within 100m radius. Flow accumulation calculated using D8 flow routing across a subcatchment window after Priority-Flood depression conditioning. This exploratory terrain index is non-probabilistic."
+}

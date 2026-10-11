@@ -1,0 +1,52 @@
+{
+  "zone_id": "zone-punjab",
+  "zone_name": "Punjab Monitoring Zone",
+  "state": "Punjab",
+  "target_coordinates": [
+    75.3412,
+    31.1471
+  ],
+  "data_status": "verified",
+  "processed_at": "2026-10-11T10:39:30.849196+00:00",
+  "terrain_features": {
+    "elevation_m": 221.23,
+    "slope_deg": 0.75,
+    "local_relief_m": 2.94,
+    "flow_accumulation": 2.0
+  },
+  "dataset_provenance": {
+    "dataset_name": "Copernicus DEM GLO-30",
+    "product_id": "Copernicus_DSM_COG_10_N31_00_E075_00_DEM",
+    "source_url": "https://copernicus-dem-30m.s3.amazonaws.com/Copernicus_DSM_COG_10_N31_00_E075_00_DEM/Copernicus_DSM_COG_10_N31_00_E075_00_DEM.tif",
+    "provider": "European Space Agency (ESA) / AWS Open Data Copernicus DEM",
+    "licence": "Copernicus Sentinel Data Terms / Open Access Public Dataset",
+    "vertical_datum": "EGM2008 geoid (meters)",
+    "horizontal_crs": "EPSG:4326 (WGS84 2D)",
+    "spatial_resolution": "1 arc-second (~30 meters)",
+    "tile_bounds": [
+      75.0,
+      31.0,
+      76.0,
+      32.0
+    ]
+  },
+  "processing_parameters": {
+    "mean_cell_size_m": 28.69,
+    "dy_m": 30.92,
+    "dx_m": 26.46,
+    "raster_pixel_indices": {
+      "row": 3070,
+      "col": 1228
+    },
+    "subcatchment_window_shape": [
+      201,
+      201
+    ],
+    "algorithms": {
+      "hydrology_algorithm": "D8 steepest descent flow routing with Priority-Flood pit conditioning (Barnes et al., 2014)",
+      "local_relief_radius_m": 100.0,
+      "catchment_half_window_cells": 100
+    }
+  },
+  "scientific_notes": "Elevation derived from genuine Copernicus GLO-30 DSM raster. Slope computed using central finite differences on metric grid. Local relief represents elevation difference within 100m radius. Flow accumulation calculated using D8 flow routing across a subcatchment window after Priority-Flood depression conditioning. This exploratory terrain index is non-probabilistic."
+}

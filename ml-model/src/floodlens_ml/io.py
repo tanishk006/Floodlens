@@ -82,17 +82,25 @@ def validate_pipeline_prerequisites(
     )
 
 
-def load_verified_pilot_features(zone_id: str) -> FeatureInput | None:
+def load_verified_zone_features(zone_id: str) -> FeatureInput | None:
     """Load verified terrain features from processed provenance record if available.
 
     Returns FeatureInput with terrain features populated and rainfall=0.0,
     or None if the zone has no verified terrain data.
     """
-    if zone_id != "zone-uttar-pradesh":
-        return None
+    candidates = [
+        PROCESSED_DATA_DIR / f"{zone_id}_provenance.json",
+    ]
+    if zone_id == "zone-uttar-pradesh":
+        candidates.append(PROCESSED_DATA_DIR / "pilot_uttar_pradesh_provenance.json")
 
-    provenance_path = PROCESSED_DATA_DIR / "pilot_uttar_pradesh_provenance.json"
-    if not provenance_path.is_file():
+    provenance_path = None
+    for p in candidates:
+        if p.is_file():
+            provenance_path = p
+            break
+
+    if provenance_path is None:
         return None
 
     try:
@@ -110,14 +118,18 @@ def load_verified_pilot_features(zone_id: str) -> FeatureInput | None:
         return None
 
 
+# Backward-compatible alias
+load_verified_pilot_features = load_verified_zone_features
+
+
 def get_candidate_monitoring_zones() -> list[CandidateZone]:
     """Return catalog of ten candidate Indian monitoring zones.
 
     Scientific disclaimer:
     The ten states correspond to candidate monitoring zones identified for the
-    prototype. The pilot zone (Uttar Pradesh) is backed by real, verified
-    Copernicus GLO-30 DEM terrain measurements. The remaining nine zones declare
-    `insufficient_data` until real DEMs and ground observations are connected.
+    prototype. Any zone with ingested Copernicus GLO-30 DEM terrain data is
+    marked `verified`. Any zone without ingested terrain data transparently
+    declares `insufficient_data` until real DEMs are connected.
     Coordinates are formatted as [longitude, latitude].
     """
     candidates = [
@@ -183,27 +195,38 @@ def get_candidate_monitoring_zones() -> list[CandidateZone]:
         ),
     ]
 
-    provenance_path = PROCESSED_DATA_DIR / "pilot_uttar_pradesh_provenance.json"
-    pilot_provenance_data = None
-    if provenance_path.is_file():
-        try:
-            with open(provenance_path, "r", encoding="utf-8") as f:
-                pilot_provenance_data = json.load(f)
-        except Exception:
-            pilot_provenance_data = None
-
     zones: list[CandidateZone] = []
     for zone_id, name, state, coords in candidates:
-        if zone_id == "zone-uttar-pradesh" and pilot_provenance_data is not None:
-            dem_info = pilot_provenance_data.get("dataset_provenance", {})
-            tf = pilot_provenance_data.get("terrain_features", {})
+        candidate_paths = [
+            PROCESSED_DATA_DIR / f"{zone_id}_provenance.json",
+        ]
+        if zone_id == "zone-uttar-pradesh":
+            candidate_paths.append(
+                PROCESSED_DATA_DIR / "pilot_uttar_pradesh_provenance.json"
+            )
+
+        provenance_data = None
+        for p in candidate_paths:
+            if p.is_file():
+                try:
+                    with open(p, "r", encoding="utf-8") as f:
+                        provenance_data = json.load(f)
+                    break
+                except Exception:
+                    provenance_data = None
+
+        if provenance_data is not None:
+            dem_info = provenance_data.get("dataset_provenance", {})
+            tf = provenance_data.get("terrain_features", {})
+            tile_bounds = dem_info.get("tile_bounds")
+            aoi_bbox = tuple(tile_bounds) if tile_bounds else None
             zones.append(
                 CandidateZone(
                     id=zone_id,
                     name=name,
                     state=state,
                     coordinates=coords,
-                    aoi_bbox=(80.0, 26.0, 81.0, 27.0),
+                    aoi_bbox=aoi_bbox,
                     data_status="verified",
                     sources=[
                         DataSourceProvenance(
@@ -227,7 +250,7 @@ def get_candidate_monitoring_zones() -> list[CandidateZone]:
                         )
                     ],
                     notes=(
-                        "Verified pilot monitoring zone with genuine Copernicus "
+                        "Verified monitoring zone with genuine Copernicus "
                         "GLO-30 DEM measurements. Hydrological processing conducted "
                         "via D8 routing and Priority-Flood depression conditioning."
                     ),

@@ -94,15 +94,10 @@ def test_candidate_monitoring_zones_catalog() -> None:
         lon, lat = zone.coordinates
         assert 68.0 <= lon <= 98.0
         assert 8.0 <= lat <= 38.0
-        if zone.id == "zone-uttar-pradesh":
-            assert zone.data_status == "verified"
-            assert len(zone.sources) >= 1
-            assert "Copernicus" in zone.sources[0].name
-            assert zone.aoi_bbox == (80.0, 26.0, 81.0, 27.0)
-        else:
-            assert zone.data_status == "insufficient_data"
-            assert zone.sources == []
-            assert "unverified" in (zone.notes or "")
+        assert zone.data_status == "verified"
+        assert len(zone.sources) >= 1
+        assert "Copernicus" in zone.sources[0].name
+        assert zone.aoi_bbox is not None
 
 
 def test_load_verified_pilot_features() -> None:
@@ -115,8 +110,13 @@ def test_load_verified_pilot_features() -> None:
     assert up_features.local_relief_m == 11.59
     assert up_features.flow_accumulation == 19.0
 
-    unverified = load_verified_pilot_features("zone-bihar")
-    assert unverified is None
+    bihar_features = load_verified_pilot_features("zone-bihar")
+    assert bihar_features is not None
+    assert bihar_features.elevation_m == 55.85
+    assert bihar_features.slope_deg == 1.42
+
+    missing = load_verified_pilot_features("zone-nonexistent")
+    assert missing is None
 
 
 def test_synthetic_test_fixtures_presets() -> None:

@@ -194,8 +194,16 @@ export async function fetchWeatherForecast(
   for (let i = 0; i < times.length; i++) {
     const rawP = precipitations[i];
     const rawR = rains[i];
-    // Sanitize: ensure non-negative, finite numbers (mm)
-    const p = typeof rawP === "number" && Number.isFinite(rawP) && rawP >= 0 ? rawP : 0;
+
+    // Explicit scientific validation: do not silently convert corrupt or negative data into 0 mm
+    if (typeof rawP !== "number" || !Number.isFinite(rawP) || rawP < 0) {
+      throw new WeatherServiceError(
+        `Open-Meteo response contains invalid non-finite or negative precipitation value at hour ${i}: ${rawP}.`,
+        "PARSE_ERROR"
+      );
+    }
+
+    const p = rawP;
     const r = typeof rawR === "number" && Number.isFinite(rawR) && rawR >= 0 ? rawR : p;
     const timeIso = times[i];
 

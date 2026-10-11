@@ -157,7 +157,7 @@ describe("Open-Meteo Weather Service", () => {
     });
   });
 
-  it("sanitizes negative or NaN precipitation values to 0.0 mm", async () => {
+  it("rejects negative or NaN precipitation values with PARSE_ERROR", async () => {
     vi.spyOn(globalThis, "fetch").mockResolvedValueOnce({
       ok: true,
       status: 200,
@@ -167,14 +167,34 @@ describe("Open-Meteo Weather Service", () => {
         hourly_units: { time: "iso8601", precipitation: "mm" },
         hourly: {
           time: ["2026-10-11T00:00", "2026-10-11T01:00"],
-          precipitation: [-5.0, NaN],
+          precipitation: [-5.0, 10.0],
+        },
+      }),
+    } as Response);
+
+    await expect(fetchWeatherForecast(26.8467, 80.9462)).rejects.toMatchObject({
+      code: "PARSE_ERROR",
+    });
+  });
+
+  it("correctly handles valid zero-precipitation forecast (dry weather)", async () => {
+    vi.spyOn(globalThis, "fetch").mockResolvedValueOnce({
+      ok: true,
+      status: 200,
+      json: async () => ({
+        latitude: 26.85,
+        longitude: 80.95,
+        hourly_units: { time: "iso8601", precipitation: "mm" },
+        hourly: {
+          time: ["2026-10-11T00:00", "2026-10-11T01:00"],
+          precipitation: [0.0, 0.0],
         },
       }),
     } as Response);
 
     const result = await fetchWeatherForecast(26.8467, 80.9462);
-    expect(result.hourly[0].precipitationMm).toBe(0);
-    expect(result.hourly[1].precipitationMm).toBe(0);
-    expect(result.totalPrecipitation24h).toBe(0);
+    expect(result.peakPrecipitationRate).toBe(0.0);
+    expect(result.totalPrecipitation24h).toBe(0.0);
+    expect(result.hasUpcomingPrecipitation).toBe(false);
   });
 });

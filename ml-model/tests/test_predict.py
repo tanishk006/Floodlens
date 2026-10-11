@@ -16,6 +16,7 @@ from floodlens_ml.predict import (
     predict_all_scenarios,
     predict_risk,
 )
+from floodlens_ml.schemas import CandidateZone
 
 CONFIG_PATH = Path(__file__).resolve().parents[1] / "config.yaml"
 
@@ -93,16 +94,41 @@ def test_evaluate_pilot_zone_returns_verified_score(
 def test_evaluate_candidate_zone_returns_insufficient_data(
     repo_config: FloodlensConfig,
 ) -> None:
-    zones = get_candidate_monitoring_zones()
-    zone_bihar = next(z for z in zones if z.id == "zone-bihar")
+    unverified_zone = CandidateZone(
+        id="zone-unverified-test",
+        name="Unverified Test Zone",
+        state="Test State",
+        coordinates=(77.0, 20.0),
+        data_status="insufficient_data",
+    )
 
-    result = evaluate_candidate_zone(zone_bihar, repo_config, scenario_id="moderate")
+    result = evaluate_candidate_zone(
+        unverified_zone, repo_config, scenario_id="moderate"
+    )
 
-    assert result.zone_id == zone_bihar.id
-    assert result.locality == zone_bihar.name
-    assert result.coordinates == zone_bihar.coordinates
+    assert result.zone_id == unverified_zone.id
+    assert result.locality == unverified_zone.name
+    assert result.coordinates == unverified_zone.coordinates
     assert result.risk_index is None
     assert result.risk_category == "insufficient_data"
     assert result.data_quality.status == "insufficient_data"
     assert result.is_probability is False
     assert len(result.data_quality.missing_inputs) == 4
+
+
+def test_evaluate_all_catalog_zones(
+    repo_config: FloodlensConfig,
+) -> None:
+    zones = get_candidate_monitoring_zones()
+    assert len(zones) == 10
+
+    for zone in zones:
+        result = evaluate_candidate_zone(zone, repo_config, scenario_id="moderate")
+        assert result.zone_id == zone.id
+        assert result.risk_index is not None
+        assert 0.0 <= result.risk_index <= 100.0
+        assert result.risk_category in ("low", "moderate", "high", "severe")
+        assert result.data_quality.status == "available"
+        assert result.is_probability is False
+        assert len(result.factors) == 5
+        assert all(f.available is True for f in result.factors)

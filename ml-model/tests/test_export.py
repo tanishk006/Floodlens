@@ -41,12 +41,9 @@ def test_build_candidate_zones_export_bundle(
         for sc in bundle.scenarios:
             assert sc.id in zone_summary
             res = zone_summary[sc.id]
-            if zone.id == "zone-uttar-pradesh":
-                assert res.risk_index is not None
-                assert 0.0 <= res.risk_index <= 100.0
-            else:
-                assert res.risk_index is None
-                assert res.risk_category == "insufficient_data"
+            assert res.risk_index is not None
+            assert 0.0 <= res.risk_index <= 100.0
+            assert res.risk_category in ("low", "moderate", "high", "severe")
             assert res.is_probability is False
 
 
@@ -71,10 +68,7 @@ def test_candidate_zones_to_geojson_format(
         assert 68.0 <= lon <= 98.0
         assert 8.0 <= lat <= 38.0
         props = feat["properties"]
-        if props["id"] == "zone-uttar-pradesh":
-            assert props["data_status"] == "verified"
-        else:
-            assert props["data_status"] == "insufficient_data"
+        assert props["data_status"] == "verified"
 
 
 def test_build_synthetic_benchmark_results(

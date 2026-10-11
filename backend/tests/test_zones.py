@@ -43,13 +43,7 @@ def test_get_zones_returns_all_ten_candidate_zones() -> None:
         # Longitude, latitude within India's approximate bounds
         assert 68.0 <= lon <= 98.0
         assert 8.0 <= lat <= 38.0
-
-        if zone.id == "zone-uttar-pradesh":
-            assert zone.data_status == "verified"
-            assert len(zone.sources) >= 1
-            assert "Copernicus" in zone.sources[0].name
-            assert zone.aoi_bbox == (80.0, 26.0, 81.0, 27.0)
-        else:
-            assert zone.data_status == "insufficient_data"
-            assert zone.sources == []
-            assert "unverified" in (zone.notes or "")
+        assert zone.data_status == "verified"
+        assert len(zone.sources) >= 1
+        assert "Copernicus" in zone.sources[0].name
+        assert zone.aoi_bbox is not None

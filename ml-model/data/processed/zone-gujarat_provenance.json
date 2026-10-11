@@ -1,0 +1,52 @@
+{
+  "zone_id": "zone-gujarat",
+  "zone_name": "Gujarat Monitoring Zone",
+  "state": "Gujarat",
+  "target_coordinates": [
+    72.5714,
+    23.0225
+  ],
+  "data_status": "verified",
+  "processed_at": "2026-10-11T10:40:39.327596+00:00",
+  "terrain_features": {
+    "elevation_m": 50.24,
+    "slope_deg": 0.71,
+    "local_relief_m": 11.48,
+    "flow_accumulation": 3.0
+  },
+  "dataset_provenance": {
+    "dataset_name": "Copernicus DEM GLO-30",
+    "product_id": "Copernicus_DSM_COG_10_N23_00_E072_00_DEM",
+    "source_url": "https://copernicus-dem-30m.s3.amazonaws.com/Copernicus_DSM_COG_10_N23_00_E072_00_DEM/Copernicus_DSM_COG_10_N23_00_E072_00_DEM.tif",
+    "provider": "European Space Agency (ESA) / AWS Open Data Copernicus DEM",
+    "licence": "Copernicus Sentinel Data Terms / Open Access Public Dataset",
+    "vertical_datum": "EGM2008 geoid (meters)",
+    "horizontal_crs": "EPSG:4326 (WGS84 2D)",
+    "spatial_resolution": "1 arc-second (~30 meters)",
+    "tile_bounds": [
+      72.0,
+      23.0,
+      73.0,
+      24.0
+    ]
+  },
+  "processing_parameters": {
+    "mean_cell_size_m": 29.69,
+    "dy_m": 30.92,
+    "dx_m": 28.46,
+    "raster_pixel_indices": {
+      "row": 3519,
+      "col": 2057
+    },
+    "subcatchment_window_shape": [
+      181,
+      201
+    ],
+    "algorithms": {
+      "hydrology_algorithm": "D8 steepest descent flow routing with Priority-Flood pit conditioning (Barnes et al., 2014)",
+      "local_relief_radius_m": 100.0,
+      "catchment_half_window_cells": 100
+    }
+  },
+  "scientific_notes": "Elevation derived from genuine Copernicus GLO-30 DSM raster. Slope computed using central finite differences on metric grid. Local relief represents elevation difference within 100m radius. Flow accumulation calculated using D8 flow routing across a subcatchment window after Priority-Flood depression conditioning. This exploratory terrain index is non-probabilistic."
+}

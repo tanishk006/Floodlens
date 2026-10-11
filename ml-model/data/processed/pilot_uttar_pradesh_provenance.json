@@ -7,7 +7,7 @@
     26.8467
   ],
   "data_status": "verified",
-  "processed_at": "2026-10-11T09:33:04.754038+00:00",
+  "processed_at": "2026-10-11T10:39:13.744257+00:00",
   "terrain_features": {
     "elevation_m": 112.66,
     "slope_deg": 6.42,
@@ -48,5 +48,5 @@
       "catchment_half_window_cells": 100
     }
   },
-  "scientific_notes": "Elevation derived from genuine Copernicus GLO-30 DSM raster. Slope computed using central finite differences on metric cell dimensions. Local relief represents elevation difference within a 100m neighborhood radius. Flow accumulation calculated using D8 flow routing across a 201x201 (~6x6 km) subcatchment after Priority-Flood depression conditioning. This exploratory terrain index is non-probabilistic."
+  "scientific_notes": "Elevation derived from genuine Copernicus GLO-30 DSM raster. Slope computed using central finite differences on metric grid. Local relief represents elevation difference within 100m radius. Flow accumulation calculated using D8 flow routing across a subcatchment window after Priority-Flood depression conditioning. This exploratory terrain index is non-probabilistic."
 }

@@ -1,0 +1,52 @@
+{
+  "zone_id": "zone-assam",
+  "zone_name": "Assam Monitoring Zone",
+  "state": "Assam",
+  "target_coordinates": [
+    91.7539,
+    26.1445
+  ],
+  "data_status": "verified",
+  "processed_at": "2026-10-11T10:39:48.266136+00:00",
+  "terrain_features": {
+    "elevation_m": 96.4,
+    "slope_deg": 8.42,
+    "local_relief_m": 22.57,
+    "flow_accumulation": 1.0
+  },
+  "dataset_provenance": {
+    "dataset_name": "Copernicus DEM GLO-30",
+    "product_id": "Copernicus_DSM_COG_10_N26_00_E091_00_DEM",
+    "source_url": "https://copernicus-dem-30m.s3.amazonaws.com/Copernicus_DSM_COG_10_N26_00_E091_00_DEM/Copernicus_DSM_COG_10_N26_00_E091_00_DEM.tif",
+    "provider": "European Space Agency (ESA) / AWS Open Data Copernicus DEM",
+    "licence": "Copernicus Sentinel Data Terms / Open Access Public Dataset",
+    "vertical_datum": "EGM2008 geoid (meters)",
+    "horizontal_crs": "EPSG:4326 (WGS84 2D)",
+    "spatial_resolution": "1 arc-second (~30 meters)",
+    "tile_bounds": [
+      91.0,
+      26.0,
+      92.0,
+      27.0
+    ]
+  },
+  "processing_parameters": {
+    "mean_cell_size_m": 29.34,
+    "dy_m": 30.92,
+    "dx_m": 27.76,
+    "raster_pixel_indices": {
+      "row": 3080,
+      "col": 2714
+    },
+    "subcatchment_window_shape": [
+      201,
+      201
+    ],
+    "algorithms": {
+      "hydrology_algorithm": "D8 steepest descent flow routing with Priority-Flood pit conditioning (Barnes et al., 2014)",
+      "local_relief_radius_m": 100.0,
+      "catchment_half_window_cells": 100
+    }
+  },
+  "scientific_notes": "Elevation derived from genuine Copernicus GLO-30 DSM raster. Slope computed using central finite differences on metric grid. Local relief represents elevation difference within 100m radius. Flow accumulation calculated using D8 flow routing across a subcatchment window after Priority-Flood depression conditioning. This exploratory terrain index is non-probabilistic."
+}
