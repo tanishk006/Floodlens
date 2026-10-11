@@ -58,6 +58,10 @@ export default function Explorer({
     riskResult?.factors?.find((f) => f.factor_name === "slope")?.raw_value ??
     undefined;
 
+  const flowAccVal =
+    riskResult?.factors?.find((f) => f.factor_name === "flow_accumulation")?.raw_value ??
+    undefined;
+
   return (
     <div className="h-full flex flex-col lg:flex-row overflow-hidden bg-[#131211]">
       {/* Map or 3D Topographic Terrain View */}
@@ -93,6 +97,7 @@ export default function Explorer({
               elevationM={elevationVal}
               reliefM={reliefVal}
               slopeDeg={slopeVal}
+              flowAcc={flowAccVal}
             />
           </Suspense>
         )}

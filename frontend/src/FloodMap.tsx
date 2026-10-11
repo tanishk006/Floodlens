@@ -17,7 +17,10 @@ const INDIA_CENTER: [number, number] = [79.5, 23.0];
 const INDIA_ZOOM = 4.5;
 const FLY_ZOOM = 6.5;
 
-function createDarkStyle(): StyleSpecification {
+const CARTO_API_KEY = (import.meta.env.VITE_CARTO_API_KEY as string | undefined)?.trim();
+
+function createDarkStyle(apiKey?: string): StyleSpecification {
+  const keyParam = apiKey ? `?key=${encodeURIComponent(apiKey)}` : "";
   return {
     version: 8,
     name: "FloodLens Muted Dark Cartography",
@@ -25,9 +28,10 @@ function createDarkStyle(): StyleSpecification {
       "carto-dark": {
         type: "raster",
         tiles: [
-          "https://a.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}@2x.png",
-          "https://b.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}@2x.png",
-          "https://c.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}@2x.png",
+          `https://a.basemaps.cartocdn.com/rastertiles/dark_nolabels/{z}/{x}/{y}@2x.png${keyParam}`,
+          `https://b.basemaps.cartocdn.com/rastertiles/dark_nolabels/{z}/{x}/{y}@2x.png${keyParam}`,
+          `https://c.basemaps.cartocdn.com/rastertiles/dark_nolabels/{z}/{x}/{y}@2x.png${keyParam}`,
+          `https://d.basemaps.cartocdn.com/rastertiles/dark_nolabels/{z}/{x}/{y}@2x.png${keyParam}`,
         ],
         tileSize: 256,
         attribution:
@@ -37,8 +41,10 @@ function createDarkStyle(): StyleSpecification {
       "carto-labels": {
         type: "raster",
         tiles: [
-          "https://a.basemaps.cartocdn.com/dark_only_labels/{z}/{x}/{y}@2x.png",
-          "https://b.basemaps.cartocdn.com/dark_only_labels/{z}/{x}/{y}@2x.png",
+          `https://a.basemaps.cartocdn.com/rastertiles/dark_only_labels/{z}/{x}/{y}@2x.png${keyParam}`,
+          `https://b.basemaps.cartocdn.com/rastertiles/dark_only_labels/{z}/{x}/{y}@2x.png${keyParam}`,
+          `https://c.basemaps.cartocdn.com/rastertiles/dark_only_labels/{z}/{x}/{y}@2x.png${keyParam}`,
+          `https://d.basemaps.cartocdn.com/rastertiles/dark_only_labels/{z}/{x}/{y}@2x.png${keyParam}`,
         ],
         tileSize: 256,
         maxzoom: 19,
@@ -80,26 +86,20 @@ export default function FloodMap({
   const markersRef = useRef<Marker[]>([]);
   const [mapError, setMapError] = useState<string | null>(null);
   const [mapLoaded, setMapLoaded] = useState(false);
-  const [basemapProvider, setBasemapProvider] = useState<"MapTiler" | "CARTO">("CARTO");
+  const [basemapProvider] = useState<string>(
+    CARTO_API_KEY ? "CARTO (Auth)" : "CARTO Dark"
+  );
 
-  // Initialize map
+  // Initialize map with bulletproof CARTO Dark style
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
-
-    const mapTilerKey = (import.meta.env.VITE_MAPTILER_API_KEY as string | undefined)?.trim();
-    const useMapTiler = Boolean(mapTilerKey && mapTilerKey !== "your_maptiler_api_key_here");
-    const initialStyle: string | StyleSpecification = useMapTiler
-      ? `https://api.maptiler.com/maps/dataviz-dark/style.json?key=${mapTilerKey}`
-      : createDarkStyle();
-
-    setBasemapProvider(useMapTiler ? "MapTiler" : "CARTO");
 
     let map: Map;
     try {
       map = new Map({
         container,
-        style: initialStyle,
+        style: createDarkStyle(CARTO_API_KEY),
         center: INDIA_CENTER,
         zoom: INDIA_ZOOM,
         minZoom: 3,
@@ -118,23 +118,21 @@ export default function FloodMap({
 
     map.addControl(new NavigationControl({ showCompass: false }), "top-right");
 
-    map.on("load", () => {
+    const onReady = () => {
       setMapLoaded(true);
-      map.resize();
-    });
-
-    const handleError = (e: any) => {
-      console.warn("FloodLens Map notice:", e?.error ?? e);
-      if (useMapTiler && basemapProvider === "MapTiler") {
-        try {
-          map.setStyle(createDarkStyle());
-          setBasemapProvider("CARTO");
-        } catch {
-          // ignore fallback error
-        }
-      }
+      map.resize?.();
     };
-    map.on("error", handleError);
+
+    map.on("load", onReady);
+    map.on("style.load", onReady);
+
+    // Failsafe timer to never trap user in an indefinite loading overlay
+    const fallbackTimer = setTimeout(() => {
+      if (mapRef.current) {
+        setMapLoaded(true);
+        mapRef.current.resize?.();
+      }
+    }, 800);
 
     let observer: ResizeObserver | null = null;
     if (typeof ResizeObserver !== "undefined") {
@@ -147,8 +145,10 @@ export default function FloodMap({
     }
 
     return () => {
+      clearTimeout(fallbackTimer);
       observer?.disconnect();
-      map.off("error", handleError);
+      map.off("load", onReady);
+      map.off("style.load", onReady);
       map.remove();
       mapRef.current = null;
       setMapLoaded(false);
@@ -248,12 +248,19 @@ export default function FloodMap({
     const zone = zones.find((z) => z.id === selectedZoneId);
     if (!zone) return;
 
-    map.flyTo({
-      center: zone.coordinates,
-      zoom: Math.max(map.getZoom(), FLY_ZOOM),
-      duration: 1000,
-      essential: true,
-    });
+    if (typeof map.flyTo === "function") {
+      map.flyTo({
+        center: zone.coordinates,
+        zoom: Math.max(map.getZoom?.() ?? 4.2, FLY_ZOOM),
+        duration: 1000,
+        essential: true,
+      });
+    } else if (typeof map.easeTo === "function") {
+      map.easeTo({
+        center: zone.coordinates,
+        zoom: Math.max(map.getZoom?.() ?? 4.2, FLY_ZOOM),
+      });
+    }
   }, [selectedZoneId, zones, mapLoaded]);
 
   if (mapError) {
@@ -271,7 +278,7 @@ export default function FloodMap({
     <div className="relative h-full w-full bg-[#131211]">
       <div ref={containerRef} className="h-full w-full" />
 
-      {/* Map loading overlay (calm, static, no spinning neon) */}
+      {/* Map loading overlay (fades out as soon as map style is ready) */}
       {!mapLoaded && (
         <div className="absolute inset-0 flex items-center justify-center bg-surface-primary/90 z-10">
           <div className="flex items-center gap-2 text-text-secondary text-xs font-mono">
