@@ -116,4 +116,65 @@ describe("Open-Meteo Weather Service", () => {
       code: "NETWORK_ERROR",
     });
   });
+
+  it("throws PARSE_ERROR when hourly arrays have mismatched lengths", async () => {
+    vi.spyOn(globalThis, "fetch").mockResolvedValueOnce({
+      ok: true,
+      status: 200,
+      json: async () => ({
+        latitude: 26.85,
+        longitude: 80.95,
+        hourly_units: { time: "iso8601", precipitation: "mm" },
+        hourly: {
+          time: ["2026-10-11T00:00", "2026-10-11T01:00"],
+          precipitation: [2.5], // Length 1 vs 2
+        },
+      }),
+    } as Response);
+
+    await expect(fetchWeatherForecast(26.8467, 80.9462)).rejects.toMatchObject({
+      code: "PARSE_ERROR",
+    });
+  });
+
+  it("throws PARSE_ERROR when hourly array is empty", async () => {
+    vi.spyOn(globalThis, "fetch").mockResolvedValueOnce({
+      ok: true,
+      status: 200,
+      json: async () => ({
+        latitude: 26.85,
+        longitude: 80.95,
+        hourly_units: { time: "iso8601", precipitation: "mm" },
+        hourly: {
+          time: [],
+          precipitation: [],
+        },
+      }),
+    } as Response);
+
+    await expect(fetchWeatherForecast(26.8467, 80.9462)).rejects.toMatchObject({
+      code: "PARSE_ERROR",
+    });
+  });
+
+  it("sanitizes negative or NaN precipitation values to 0.0 mm", async () => {
+    vi.spyOn(globalThis, "fetch").mockResolvedValueOnce({
+      ok: true,
+      status: 200,
+      json: async () => ({
+        latitude: 26.85,
+        longitude: 80.95,
+        hourly_units: { time: "iso8601", precipitation: "mm" },
+        hourly: {
+          time: ["2026-10-11T00:00", "2026-10-11T01:00"],
+          precipitation: [-5.0, NaN],
+        },
+      }),
+    } as Response);
+
+    const result = await fetchWeatherForecast(26.8467, 80.9462);
+    expect(result.hourly[0].precipitationMm).toBe(0);
+    expect(result.hourly[1].precipitationMm).toBe(0);
+    expect(result.totalPrecipitation24h).toBe(0);
+  });
 });

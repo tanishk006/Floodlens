@@ -18,13 +18,9 @@ from app.services.errors import ServiceError
 logger = logging.getLogger(__name__)
 
 
-def _error_response(
-    state: ApiState, message: str, status_code: int
-) -> JSONResponse:
+def _error_response(state: ApiState, message: str, status_code: int) -> JSONResponse:
     body = ApiError(status=state, message=message)
-    return JSONResponse(
-        status_code=status_code, content=body.model_dump(mode="json")
-    )
+    return JSONResponse(status_code=status_code, content=body.model_dump(mode="json"))
 
 
 def _http_error_state(status_code: int) -> ApiState:

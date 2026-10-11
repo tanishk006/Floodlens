@@ -41,8 +41,12 @@ def test_build_candidate_zones_export_bundle(
         for sc in bundle.scenarios:
             assert sc.id in zone_summary
             res = zone_summary[sc.id]
-            assert res.risk_index is None
-            assert res.risk_category == "insufficient_data"
+            if zone.id == "zone-uttar-pradesh":
+                assert res.risk_index is not None
+                assert 0.0 <= res.risk_index <= 100.0
+            else:
+                assert res.risk_index is None
+                assert res.risk_category == "insufficient_data"
             assert res.is_probability is False
 
 
@@ -67,7 +71,10 @@ def test_candidate_zones_to_geojson_format(
         assert 68.0 <= lon <= 98.0
         assert 8.0 <= lat <= 38.0
         props = feat["properties"]
-        assert props["data_status"] == "insufficient_data"
+        if props["id"] == "zone-uttar-pradesh":
+            assert props["data_status"] == "verified"
+        else:
+            assert props["data_status"] == "insufficient_data"
 
 
 def test_build_synthetic_benchmark_results(
@@ -88,9 +95,7 @@ def test_build_synthetic_benchmark_results(
             assert res.data_quality.status == "illustrative"
 
 
-def test_write_export_artifacts(
-    repo_config: FloodlensConfig, tmp_path: Path
-) -> None:
+def test_write_export_artifacts(repo_config: FloodlensConfig, tmp_path: Path) -> None:
     out = write_export_artifacts(repo_config, output_dir=tmp_path)
 
     assert out["bundle"].exists()

@@ -97,3 +97,56 @@ def test_process_terrain_grid() -> None:
     assert res["elevation_max"] == 22.0
     assert res["grid_shape"] == (3, 3)
     assert res["slope_mean"] > 0.0
+
+
+def test_fill_depressions_priority_flood() -> None:
+    from floodlens_ml.terrain import fill_depressions_priority_flood
+
+    # 3x3 depression bowl: border is 20m, center is 10m
+    bowl = np.full((3, 3), 20.0, dtype=float)
+    bowl[1, 1] = 10.0
+
+    filled = fill_depressions_priority_flood(bowl)
+    assert filled[1, 1] == 20.0
+    assert np.allclose(filled, 20.0)
+
+
+def test_compute_d8_flow_accumulation() -> None:
+    from floodlens_ml.terrain import compute_d8_flow_accumulation
+
+    # Simple 3x3 slope from top-left (30m) to bottom-right (10m)
+    inclined = np.array(
+        [
+            [30.0, 25.0, 20.0],
+            [25.0, 20.0, 15.0],
+            [20.0, 15.0, 10.0],
+        ],
+        dtype=float,
+    )
+    downstream, acc = compute_d8_flow_accumulation(inclined, dy_m=30.0, dx_m=30.0)
+    assert acc.shape == (3, 3)
+    # Outlet cell at bottom-right receives upstream flow
+    assert acc[2, 2] > 1.0
+    # Top-left cell is a ridge / headwater with accumulation = 1.0
+    assert acc[0, 0] == 1.0
+
+
+def test_extract_pilot_terrain_features_real_dem() -> None:
+    from floodlens_ml.terrain import extract_pilot_terrain_features
+
+    dem_path = Path("ml-model/data/raw/copernicus_dem_uttar_pradesh.tif")
+    if not dem_path.is_file():
+        pytest.skip("Copernicus DEM file not present")
+
+    res = extract_pilot_terrain_features(
+        dem_path=dem_path,
+        target_lat=26.8467,
+        target_lon=80.9462,
+        radius_m=100.0,
+        catchment_half_cells=50,
+    )
+    assert res["elevation_m"] > 100.0
+    assert res["slope_deg"] >= 0.0
+    assert res["local_relief_m"] >= 0.0
+    assert res["flow_accumulation"] >= 1.0
+    assert res["mean_cell_size_m"] > 25.0

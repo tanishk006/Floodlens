@@ -20,8 +20,7 @@ class RiskEstimateRequest(StrictSchema):
         default="moderate",
         min_length=1,
         description=(
-            "Exploratory rainfall scenario identifier: "
-            "light, moderate, heavy, extreme"
+            "Exploratory rainfall scenario identifier: light, moderate, heavy, extreme"
         ),
     )
     rainfall_mm_per_hour: float | None = Field(

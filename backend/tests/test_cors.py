@@ -14,7 +14,9 @@ def test_cors_headers_returned_for_vite_origin() -> None:
     response = client.options("/api/zones", headers=headers)
 
     assert response.status_code == 200
-    assert response.headers.get("access-control-allow-origin") == "http://localhost:5173"
+    assert (
+        response.headers.get("access-control-allow-origin") == "http://localhost:5173"
+    )
 
 
 def test_cors_headers_on_risk_estimate() -> None:
@@ -28,4 +30,6 @@ def test_cors_headers_on_risk_estimate() -> None:
         headers=headers,
     )
     assert response.status_code == 200
-    assert response.headers.get("access-control-allow-origin") == "http://localhost:5173"
+    assert (
+        response.headers.get("access-control-allow-origin") == "http://localhost:5173"
+    )

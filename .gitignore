@@ -9,6 +9,9 @@ dist
 !/ml-model/data/raw/.gitkeep
 /ml-model/data/processed/*
 !/ml-model/data/processed/.gitkeep
+!/ml-model/data/processed/*.json
+*.tif
+*.tiff
 __pycache__/
 *.py[cod]
 .pytest_cache/

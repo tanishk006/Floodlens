@@ -9,7 +9,7 @@ from app.core.config import Settings, get_settings
 from app.main import create_app
 
 
-def test_valid_risk_request_insufficient_data() -> None:
+def test_valid_pilot_zone_risk_estimate() -> None:
     client = TestClient(create_app())
     payload = {
         "zone_id": "zone-uttar-pradesh",
@@ -25,6 +25,35 @@ def test_valid_risk_request_insufficient_data() -> None:
     assert result.zone_id == "zone-uttar-pradesh"
     assert result.locality == "Uttar Pradesh Monitoring Zone"
     assert result.coordinates == (80.9462, 26.8467)
+    assert result.risk_index is not None
+    assert 0.0 <= result.risk_index <= 100.0
+    assert result.risk_category == "low"
+    assert result.is_probability is False
+    assert result.data_quality.status == "available"
+    assert len(result.data_quality.missing_inputs) == 0
+    assert result.scenario.id == "moderate"
+    assert result.scenario.rainfall_mm_per_hour == 35.0
+    assert len(result.factors) == 5
+    assert all(f.available is True for f in result.factors)
+    assert len(result.limitations) >= 4
+
+
+def test_valid_risk_request_insufficient_data() -> None:
+    client = TestClient(create_app())
+    payload = {
+        "zone_id": "zone-bihar",
+        "scenario_id": "moderate",
+    }
+    response = client.post("/api/risk/estimate", json=payload)
+
+    assert response.status_code == 200
+    data = response.json()
+
+    # Validate against canonical ML schema
+    result = RiskScoreResult.model_validate(data)
+    assert result.zone_id == "zone-bihar"
+    assert result.locality == "Bihar Monitoring Zone"
+    assert result.coordinates == (85.1376, 25.5941)
     assert result.risk_index is None
     assert result.risk_category == "insufficient_data"
     assert result.is_probability is False
@@ -51,6 +80,24 @@ def test_valid_risk_request_custom_rainfall() -> None:
     assert result.zone_id == "zone-bihar"
     assert result.scenario.rainfall_mm_per_hour == 50.0
     assert result.risk_index is None
+
+
+def test_pilot_zone_custom_rainfall() -> None:
+    client = TestClient(create_app())
+    payload = {
+        "zone_id": "zone-uttar-pradesh",
+        "scenario_id": "moderate",
+        "rainfall_mm_per_hour": 65.0,
+    }
+    response = client.post("/api/risk/estimate", json=payload)
+
+    assert response.status_code == 200
+    data = response.json()
+    result = RiskScoreResult.model_validate(data)
+    assert result.zone_id == "zone-uttar-pradesh"
+    assert result.scenario.rainfall_mm_per_hour == 65.0
+    assert result.risk_index is not None
+    assert result.risk_category == "moderate"
 
 
 def test_invalid_zone_id_returns_outside_coverage() -> None:

@@ -91,14 +91,32 @@ def test_candidate_monitoring_zones_catalog() -> None:
     assert actual_states == expected_states
 
     for zone in zones:
-        # All candidate zones must declare insufficient_data status
-        assert zone.data_status == "insufficient_data"
-        assert zone.sources == []
-        # Longitude, latitude within India boundaries
         lon, lat = zone.coordinates
         assert 68.0 <= lon <= 98.0
         assert 8.0 <= lat <= 38.0
-        assert "unverified" in (zone.notes or "")
+        if zone.id == "zone-uttar-pradesh":
+            assert zone.data_status == "verified"
+            assert len(zone.sources) >= 1
+            assert "Copernicus" in zone.sources[0].name
+            assert zone.aoi_bbox == (80.0, 26.0, 81.0, 27.0)
+        else:
+            assert zone.data_status == "insufficient_data"
+            assert zone.sources == []
+            assert "unverified" in (zone.notes or "")
+
+
+def test_load_verified_pilot_features() -> None:
+    from floodlens_ml.io import load_verified_pilot_features
+
+    up_features = load_verified_pilot_features("zone-uttar-pradesh")
+    assert up_features is not None
+    assert up_features.elevation_m == 112.66
+    assert up_features.slope_deg == 6.42
+    assert up_features.local_relief_m == 11.59
+    assert up_features.flow_accumulation == 19.0
+
+    unverified = load_verified_pilot_features("zone-bihar")
+    assert unverified is None
 
 
 def test_synthetic_test_fixtures_presets() -> None:

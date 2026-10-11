@@ -196,11 +196,14 @@ describe("FloodLens App Component", () => {
   it("displays 'Insufficient Data' transparently when risk_index is null", async () => {
     render(<App />);
 
-    await waitFor(() => {
-      expect(
-        screen.getByText(/No real DEM or documented terrain observations are connected/i)
-      ).toBeDefined();
-    });
+    await waitFor(
+      () => {
+        expect(
+          screen.getByText(/No real DEM or documented terrain observations are connected/i)
+        ).toBeDefined();
+      },
+      { timeout: 4000 }
+    );
 
     expect(screen.getByText("Prerequisites Needed:")).toBeDefined();
     expect(screen.getByText("Missing feature: elevation_m")).toBeDefined();

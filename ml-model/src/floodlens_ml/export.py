@@ -178,9 +178,7 @@ def write_export_artifacts(
         for b_id, sc_dict in benchmarks_data.items()
     }
     with benchmarks_path.open("w", encoding="utf-8") as f:
-        f.write(
-            json.dumps(serializable_benchmarks, indent=2, ensure_ascii=False)
-        )
+        f.write(json.dumps(serializable_benchmarks, indent=2, ensure_ascii=False))
 
     return {
         "bundle": bundle_path,

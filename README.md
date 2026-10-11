@@ -1,225 +1,217 @@
 # FloodLens
 
-### Street-Level Flood Risk Intelligence & Decision Support
+### AI-Assisted, Terrain-Aware Flood-Risk Intelligence & Decision Support Platform
 
 **Environmental Hacks 2026 | Track: Heat and Water**
 
-FloodLens is an experimental prototype for exploring estimated street-level flood exposure. The project aims to use rainfall, terrain, historical waterlogging information where available, and geospatial analysis to help people understand local conditions. The presence of a data type in this description does not mean a live or verified source is connected.
+FloodLens is a geospatial environmental intelligence platform that combines **live Numerical Weather Prediction (NWP) rainfall forecasts** from Open-Meteo with **high-resolution Copernicus GLO-30 Digital Elevation Models (DEM)** and **D8 hydrological catchment routing** to deliver explainable, terrain-aware flood susceptibility assessments.
 
-Rather than simply displaying flood-prone regions, FloodLens focuses on **where flooding may occur, why a location may be at risk, and how route options compare by estimated exposure.**
+Rather than relying on synthetic fixtures, uncalibrated deep-learning black boxes, or fabricated scores, FloodLens enforces strict scientific honesty: candidate monitoring zones require validated elevation and catchment data to compute risk scores, and transparently declare `insufficient_data` when prerequisites are absent.
 
-> **Project status:** Hackathon prototype in development.
+> **Scientific Disclaimer:** FloodLens computes a deterministic relative flood-susceptibility index (0–100). It is **not** an authoritative emergency warning system, nor does it predict calibrated flood probabilities, hydrodynamic water depths, or certified route safety. Always follow official disaster management authorities (e.g., NDMA/IMD).
 
 ---
-
-## Problem Statement
-
-Urban flooding and waterlogging can disrupt transportation, damage property, and put people's safety at risk. Existing weather applications may communicate rainfall intensity or general flood warnings without providing sufficiently granular, street-level information.
-
-People need accessible tools that help them understand local flood risks and make better decisions before and during heavy rainfall.
-
-### Our Solution
-
-FloodLens aims to provide an interactive platform that:
-
-* Identifies potentially flood-prone street segments.
-* Visualizes flood-risk levels on an interactive map.
-* Explains the environmental factors contributing to a location's risk.
-* Simulates how different rainfall scenarios may affect risk levels.
-* Compares alternative routes using estimated flood exposure.
-* Uses AWS services to support data storage and risk-analysis APIs.
-
-## Key Features
-
-### 1. Interactive Flood-Risk Map
-
-Visualize locations using color-coded risk categories to understand how flood risk varies geographically.
-
-### 2. Explainable Risk Assessment
-
-Show the factors contributing to each risk estimate, such as rainfall intensity, elevation, terrain and historical waterlogging records where available.
-
-### 3. Rainfall Scenario Simulator
-
-Explore how risk scores change under different rainfall assumptions.
-
-### 4. Route Comparison
-
-Compare alternative routes using estimated flood exposure alongside route distance. Describe options only as having **lower estimated exposure** or **higher estimated exposure**; these comparisons are experimental and do not establish that a route is safe or accessible.
-
-### 5. Location-Based Insights
-
-Select a locality or street segment to inspect its estimated risk and contributing factors.
-
-### 6. AI/ML-Assisted Risk Modelling
-
-Begin with a transparent baseline risk-scoring method. Where suitable labelled historical data is available, evaluate a machine-learning model to estimate flood risk.
-
-## How It Works
-
-1. **Data collection:** Gather available rainfall, elevation, geographic and historical waterlogging data.
-2. **Data processing:** Clean and standardize the datasets and associate relevant features with geographic locations.
-3. **Risk estimation:** Calculate an initial risk score using available environmental indicators.
-4. **Model development:** Train and evaluate an ML model if sufficient reliable labelled data is available.
-5. **Visualization:** Display estimated risk levels and their contributing factors on an interactive map.
-6. **Decision support:** Compare locations and potential routes to help users make more informed decisions.
-
-The quality of risk estimates depends on data coverage, resolution, freshness and model validation. FloodLens does not claim to provide authoritative emergency warnings.
 
 ## System Architecture
 
 ```text
-Environmental Data Sources
-          |
-          v
-Data Processing & Geospatial Analysis
-          |
-          v
-Flood-Risk Scoring / ML Model
-          |
-          v
-AWS API Layer
-(API Gateway + Lambda)
-          |
-          v
-React Web Application
-          |
-          v
-Interactive Risk Map
-Risk Explanations
-Rainfall Scenarios
-Route Comparison
+┌────────────────────────────────────────────────────────────────────────────┐
+│                             FLOODLENS SYSTEM                               │
+└────────────────────────────────────────────────────────────────────────────┘
+        │                                                     │
+        ▼                                                     ▼
+┌───────────────────────────────┐           ┌────────────────────────────────┐
+│   METEOROLOGICAL INGESTION    │           │    REAL TERRAIN PROCESSING     │
+│  Open-Meteo NWP Forecast API  │           │  Copernicus GLO-30 DSM (30m)   │
+│  - Hourly precipitation (mm)  │           │  - Priority-Flood pit filling  │
+│  - 72-hour forecast window    │           │  - Finite-difference slope (°) │
+│  - Coordinate-based 15m cache │           │  - Local relief (100m radius)  │
+│  - Strict unit sanitation     │           │  - D8 flow routing (acc cells) │
+└───────────────────────────────┘           └────────────────────────────────┘
+        │                                                     │
+        └───────────────────────┬─────────────────────────────┘
+                                │
+                                ▼
+        ┌───────────────────────────────────────────────┐
+        │          FASTAPI RISK SCORING ENGINE          │
+        │           POST /api/risk/estimate             │
+        │                                               │
+        │  Exploratory Weighted Susceptibility Index:   │
+        │  R = 100 × ( 0.30 × v_rainfall               │
+        │            + 0.25 × v_low_elevation          │
+        │            + 0.20 × v_flow_accumulation      │
+        │            + 0.15 × v_local_relief           │
+        │            + 0.10 × v_slope )                │
+        │                                               │
+        │  * Insufficient data guardrails enforced      │
+        │  * is_probability: false contract             │
+        └───────────────────────────────────────────────┘
+                                │
+                                ▼
+        ┌───────────────────────────────────────────────┐
+        │            REACT 18 + TS FRONTEND             │
+        │                                               │
+        │  - MapLibre GL geospatial map (MapTiler/CARTO)│
+        │  - Real-time weather intelligence visualizer  │
+        │  - Exploratory rainfall scenario simulator    │
+        │  - Factor explainability cards                │
+        │  - Zero stale state on zone switching         │
+        └───────────────────────────────────────────────┘
 ```
 
-Amazon S3 can be used to store input datasets and generated risk-analysis outputs.
+---
 
 ## Technology Stack
 
-| Component             | Technology                                             |
-| --------------------- | ------------------------------------------------------ |
-| Frontend              | Vite, React 18, TypeScript (strict)                    |
-| Styling               | Tailwind CSS                                           |
-| Interactive maps      | MapLibre GL JS (direct use)                            |
-| Backend               | Not implemented                                        |
-| Risk data and model   | Placeholder data; no model or source connected        |
-| Cloud services        | Not connected                                          |
-| Frontend deployment   | Not configured                                         |
+| Layer | Technology | Version | Purpose |
+| :--- | :--- | :--- | :--- |
+| **Backend** | Python / FastAPI / Uvicorn | Python 3.13 / FastAPI 0.115 | High-performance REST API |
+| **Data Validation** | Pydantic V2 | 2.10+ | Schema enforcement, unit validation |
+| **ML / Hydrology** | NumPy / SciPy / tifffile / imagecodecs | Latest | D8 routing, Priority-Flood, gradient slope |
+| **Frontend** | React 18 / TypeScript / Vite | Vite 6 / React 18 | Client application |
+| **Map Rendering** | MapLibre GL JS | 5.1+ | Vector / raster basemaps & spatial markers |
+| **Weather Feed** | Open-Meteo Forecast API | Free Tier (Attribution) | 72-hour NWP precipitation forecasts |
+| **Elevation Data** | Copernicus DEM GLO-30 | 2026 release (30m) | Real Digital Surface Model rasters |
 
-The architecture below describes potential future work, not connected services.
+---
 
-## Frontend Design and Interaction
+## Data Dictionary
 
-The frontend follows a restrained survey-map visual style. Use the following design tokens through Tailwind configuration rather than hardcoding colors in components.
+| Field | Source | Unit | Normalization Formula | Weight | Role in Risk Engine |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| `rainfall_mm_per_hour` | Open-Meteo / Scenario | mm/hr | $\text{clip}(r / 115.0, 0, 1)$ | **0.30** | Atmospheric forcing; higher rate increases ponding and runoff volume. |
+| `elevation_m` | Copernicus GLO-30 | m (EGM2008) | $\text{clip}((100.0 - z) / 100.0, 0, 1)$ | **0.25** | Lowland indicator; lower elevations (coastal/valleys) have higher ponding susceptibility. |
+| `flow_accumulation` | D8 Flow Routing | cell count | $\text{clip}(A / 1000.0, 0, 1)$ | **0.20** | Upslope drainage area; higher contributing cell count indicates major drainage channels. |
+| `local_relief_m` | Copernicus GLO-30 | m (100m window) | $\text{clip}((10.0 - \Delta z) / 10.0, 0, 1)$ | **0.15** | Terrain depression indicator; flatter local topography retains standing water. |
+| `slope_deg` | Central Differences | degrees | $\text{clip}((30.0 - \theta) / 30.0, 0, 1)$ | **0.10** | Runoff velocity factor; gentle slopes impede gravitational drainage. |
 
-| Token | Value |
-| ----- | ----- |
-| paper | `#F4F1EA` |
-| ink | `#1B1F23` |
-| muted | `#55595E` |
-| rule | `#C9C3B6` |
-| accent | `#0F5C63` |
-| risk low / moderate / high / severe | `#7A9E7E` / `#D9B44A` / `#D9772B` / `#A3262A` |
-| water depth steps | `#A9CBC7`, `#6FA5A3`, `#3C7F82`, `#0F5C63` |
+---
 
-Use Source Serif 4 for headings and the wordmark, IBM Plex Sans for interface text, and IBM Plex Mono with tabular numerals for every number. Load these fonts from `index.html`; use the Tailwind names `font-display`, `font-ui`, and `font-data` without overriding `font-sans`, `font-serif`, or `font-mono`.
+## Pilot Zone: Uttar Pradesh Monitoring Zone
 
-Keep corner radii at 2px or less. Do not use shadows, gradients, blur, icons, pill badges, or hover animations other than a color change. Use sentence-case labels, at least 12px for labels and 13px for body text, whitespace and single hairline dividers. Reserve full borders for the inspector and route table. Keep contrast at least 4.5:1 for muted text on paper.
+- **Zone ID:** `zone-uttar-pradesh`
+- **Location:** Lucknow / Gomti River Floodplain, Uttar Pradesh, India
+- **Coordinates:** `[80.9462, 26.8467]` (EPSG:4326)
+- **DEM Tile:** `Copernicus_DSM_COG_10_N26_00_E080_00_DEM.tif`
+- **Dataset Source:** European Space Agency (ESA) Copernicus Programme / AWS Open Data Copernicus DEM 30m
+- **Vertical Datum:** EGM2008 geoid (meters)
+- **Licence:** Copernicus Sentinel Data Terms / CC0 Public Domain
+- **Extracted Metrics:**
+  - Elevation: **112.66 m**
+  - Slope: **6.42°**
+  - Local Relief (100m radius): **11.59 m**
+  - Flow Accumulation: **19.0 cells** (D8 catchment routing across 201×201 grid after Priority-Flood depression conditioning)
+- **Baseline Risk Index:** **17.37 / 100** (Low Susceptibility under 35 mm/hr moderate rainfall)
 
-Use plain, short English and hedge explanations with words such as “likely” and “estimated.” The interface must persistently display **“Experimental estimate. Not an official warning.”** Identify any placeholder content visibly as **“Placeholder data”** and never describe it as measured, real-time, or official. Clearly distinguish estimates and simulations from observations, and do not invent agency names, sensor feeds, or IDs.
+*Other candidate zones (`zone-bihar`, `zone-punjab`, etc.) declare `insufficient_data` until corresponding DEM tiles are ingested.*
 
-Use direct MapLibre GL JS integration, not a React map wrapper. Clean up map effects fully so React StrictMode does not create duplicate map sources or layers, and report errors from every fetch and MapLibre `error` event. Use real buttons, visible keyboard focus, `aria-label` where needed, and `aria-live` for scenario changes. Respect `prefers-reduced-motion`.
+---
 
-## Planned AWS Integration
+## Reproducible Setup & Execution
 
-AWS may support future data-processing and API infrastructure. No AWS service is currently connected.
+### 1. Prerequisites
+- Python 3.13
+- Node.js 20+ and npm
 
-* **Amazon S3:** Store environmental datasets, processed geographic data and generated risk layers.
-* **AWS Lambda:** Execute lightweight risk-analysis or data-processing functions.
-* **Amazon API Gateway:** Expose risk-analysis functionality through HTTP API endpoints.
-* **AWS Amplify:** Optionally host and deploy the React frontend.
-
-Only the services actually integrated into the final implementation will be listed as completed components.
-
-## Data Sources
-
-Potential sources to investigate include:
-
-* **Rainfall:** India Meteorological Department (IMD) and other accessible meteorological datasets.
-* **Elevation:** NASA SRTM or other suitable digital elevation models.
-* **Geographic data:** OpenStreetMap.
-* **Historical flooding:** Publicly available municipal reports, open datasets and documented waterlogging records.
-
-Dataset availability, licensing, spatial resolution and suitability must be verified before use. Listing a potential source does not mean FloodLens is connected to it. Distinguish measured observations from simulated scenarios and model-generated estimates in the interface.
-
-## Getting Started
-
-The frontend scaffold is in the `frontend/` directory. It uses placeholder map geometry and route labels; it has no backend, live data source, or risk model.
-
-### Prerequisites
-
-* Node.js and npm
-
-### Run the frontend
-
+### 2. Environment Configuration
+Copy `.env.example` in `frontend/`:
 ```bash
-git clone <YOUR_PUBLIC_REPOSITORY_URL>
-cd FloodLens
+cd frontend
+cp .env.example .env.local
+```
+Configure your public MapTiler key if desired:
+```env
+VITE_MAPTILER_API_KEY=your_key_here
+VITE_API_BASE_URL=http://localhost:8000
+```
+*(If no MapTiler key is provided, FloodLens automatically falls back to CARTO basemaps).*
+
+### 3. Backend Setup
+```bash
+# In repository root
+py -3.13 -m pip install -r backend/requirements.txt
+py -3.13 -m pip install -e ml-model
+py -3.13 -m pip install imagecodecs
+```
+
+### 4. Terrain Data Acquisition & Pipeline
+To reproduce the DEM download and feature extraction for the pilot zone:
+```bash
+# Run data pipeline to download Copernicus DEM and compute D8 features
+py -3.13 -m floodlens_ml.data_pipeline --zone zone-uttar-pradesh
+```
+Outputs are deterministically saved to `ml-model/data/processed/pilot_uttar_pradesh_provenance.json`.
+
+### 5. Running the Application Locally
+In terminal 1 (FastAPI backend):
+```bash
+cd backend
+py -3.13 -m uvicorn app.main:app --host 127.0.0.1 --port 8000
+```
+
+In terminal 2 (Vite frontend):
+```bash
 cd frontend
 npm install
 npm run dev
 ```
-
-The development server prints the local URL after it starts. Backend and AWS setup instructions will be added if those services are implemented.
-
-## Development Roadmap
-
-* [ ] Select a target locality and validate data availability.
-* [ ] Collect and preprocess rainfall and geographic datasets.
-* [ ] Build the initial geospatial risk-scoring engine.
-* [ ] Develop the interactive flood-risk map.
-* [ ] Add location-based risk explanations.
-* [ ] Implement rainfall scenario simulation.
-* [ ] Evaluate an ML model if suitable historical labels are available.
-* [ ] Add route comparison using a routing engine and estimated exposure.
-* [ ] Integrate AWS storage and API services.
-* [ ] Test the application and document limitations.
-* [ ] Record the hackathon demo and complete submission requirements.
-
-## Evaluation Strategy
-
-FloodLens will be evaluated on both technical quality and practical usefulness.
-
-* **Model performance:** Precision, recall, F1-score and appropriate calibration metrics, where labelled data supports evaluation.
-* **Geospatial quality:** Coverage and consistency of geographic data.
-* **Explainability:** Whether users can understand the main factors behind a risk estimate.
-* **Usability:** Whether users can quickly identify locations of concern and compare alternatives.
-* **Reliability:** Handling of missing data, API failures and unsupported locations.
-
-Evaluation results will be reported only after testing. Simulated data will not be presented as real-world validation.
-
-## Limitations and Safety
-
-FloodLens is an experimental decision-support prototype, not a certified flood forecasting or emergency-response system.
-
-* Estimates may be inaccurate when source data is incomplete or outdated.
-* A risk score does not guarantee that flooding will or will not occur.
-* Route exposure estimates cannot establish that a road is safe or accessible.
-* Users should follow official weather alerts, local authority instructions and emergency guidance.
-
-## Potential Impact
-
-FloodLens aims to make environmental information more understandable and actionable for urban residents, commuters and local communities. Its approach could also support exploratory flood-risk assessments by civic groups and urban planners.
-
-## Built For
-
-**Environmental Hacks 2026 — Heat and Water Track**
-
-Developed as a solo hackathon project exploring the use of AI/ML, geospatial analysis and AWS to address urban flooding challenges.
-
-## License
-
-A license has not yet been selected. Add an appropriate open-source license before distributing the project for reuse.
+Open `http://localhost:5173/` in your browser.
 
 ---
 
-**Experimental estimate. Not an official warning.** FloodLens is a prototype. Its outputs are estimates for exploration and must not replace official flood warnings or emergency instructions.
+## Automated Test Suites
+
+```bash
+# Backend unit & integration tests (21 tests)
+py -3.13 -m pytest backend/tests
+
+# ML package & terrain tests (48 tests)
+py -3.13 -m pytest ml-model/tests
+
+# Combined Python tests (69 tests)
+py -3.13 -m pytest backend/tests ml-model/tests
+
+# Frontend Vitest test suite (22 tests)
+cd frontend && npm test
+
+# Ruff code quality & formatting checks
+py -3.13 -m ruff check backend ml-model
+py -3.13 -m ruff format --check backend ml-model
+
+# Frontend production build
+cd frontend && npm run build
+```
+
+---
+
+## API Endpoints
+
+### 1. `GET /api/zones`
+Returns the 10 candidate monitoring zones.
+- `zone-uttar-pradesh` returns `data_status: "verified"` with real Copernicus provenance and bounding box.
+- All other 9 zones return `data_status: "insufficient_data"` with empty sources.
+
+### 2. `POST /api/risk/estimate`
+Accepts `{"zone_id": str, "scenario_id": str, "rainfall_mm_per_hour": Optional[float]}`.
+- For `zone-uttar-pradesh`: validates real terrain features and computes the deterministic 0–100 index with full factor breakdowns.
+- For unverified zones: returns `risk_index: null`, `risk_category: "insufficient_data"`, and lists missing terrain inputs.
+- Declares `is_probability: false`.
+
+### 3. `GET /api/health`
+Returns system health, version (`0.1.0`), and timestamp.
+
+---
+
+## Scientific Limitations
+
+1. **Exploratory Heuristic Index:** The 0–100 score is a multi-criteria index, **not** an inundation depth forecast or calibrated flood probability.
+2. **Subcatchment Boundary Effects:** Flow accumulation is routed within a local metric window (~6×6 km); regional river discharge from distant upstream mountains (Himalayas) is not modeled.
+3. **Urban Infrastructure:** Drainage culverts, storm sewers, pumping stations, and soil infiltration capacities are not currently ingested.
+4. **Meteorological Source:** Open-Meteo forecasts are NWP model runs, subject to forecast uncertainty.
+
+---
+
+## Attribution & Licenses
+- **Copernicus DEM GLO-30:** © European Space Agency (ESA) & European Union. Distributed via AWS Open Data Registry.
+- **Open-Meteo:** Meteorological forecast data under Open Database License (ODbL) / Creative Commons Attribution.
+- **Map Data:** © OpenStreetMap contributors, MapTiler, CARTO.

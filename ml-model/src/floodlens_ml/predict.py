@@ -23,9 +23,7 @@ def scenario_config_to_info(sc: ScenarioConfig) -> ScenarioInfo:
     )
 
 
-def get_scenario_by_id(
-    config: FloodlensConfig, scenario_id: str
-) -> ScenarioInfo:
+def get_scenario_by_id(config: FloodlensConfig, scenario_id: str) -> ScenarioInfo:
     """Find a configured rainfall scenario by its identifier."""
     for sc in config.scenarios:
         if sc.id == scenario_id:
@@ -101,11 +99,36 @@ def evaluate_candidate_zone(
 ) -> RiskScoreResult:
     """Evaluate a candidate monitoring zone.
 
-    If zone is in `insufficient_data` status (as candidate zones currently are),
-    returns an explicit `insufficient_data` score with transparent factor
-    breakdowns, missing inputs, and no fabricated index.
+    If zone is in `verified` status and backed by genuine DEM features,
+    calculates the deterministic relative susceptibility index.
+    If zone is in `insufficient_data` status, returns an explicit `insufficient_data`
+    score with transparent factor breakdowns, missing inputs, and no fabricated index.
     """
+    from floodlens_ml.io import load_verified_pilot_features
+
     scenario = get_scenario_by_id(config, scenario_id)
+
+    verified = load_verified_pilot_features(zone.id)
+
+    if verified is not None and zone.data_status == "verified":
+        features = FeatureInput(
+            elevation_m=verified.elevation_m,
+            local_relief_m=verified.local_relief_m,
+            slope_deg=verified.slope_deg,
+            flow_accumulation=verified.flow_accumulation,
+            rainfall_mm_per_hour=scenario.rainfall_mm_per_hour,
+        )
+        return calculate_risk_score(
+            features=features,
+            scenario=scenario,
+            config=config,
+            zone_id=zone.id,
+            locality=zone.name,
+            coordinates=zone.coordinates,
+            data_status="available",
+            sources=zone.sources,
+        )
+
     # If the zone has no verified terrain features, features are None
     empty_features = FeatureInput(
         elevation_m=None,

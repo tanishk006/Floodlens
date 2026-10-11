@@ -16,9 +16,7 @@ class ZonesResponse(StrictSchema):
     zones: list[CandidateZone] = Field(
         description="List of candidate monitoring zones with coordinates and status"
     )
-    total: int = Field(
-        description="Total count of candidate monitoring zones returned"
-    )
+    total: int = Field(description="Total count of candidate monitoring zones returned")
     disclaimer: str = Field(
         default=(
             "Candidate monitoring zones for experimental evaluation. "

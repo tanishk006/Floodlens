@@ -26,9 +26,7 @@ def load_model_configuration(config_path: Path) -> FloodlensConfig:
     try:
         return load_config(config_path)
     except (OSError, ValueError) as err:
-        logger.error(
-            "Failed to load model configuration from %s: %s", config_path, err
-        )
+        logger.error("Failed to load model configuration from %s: %s", config_path, err)
         raise ServiceError(
             status=ApiState.DATA_UNAVAILABLE,
             message="Model configuration or data service is unavailable.",
@@ -47,9 +45,7 @@ def estimate_risk_for_zone(
     if zone is None:
         raise ServiceError(
             status=ApiState.OUTSIDE_COVERAGE,
-            message=(
-                f"Zone '{request.zone_id}' is outside covered monitoring zones."
-            ),
+            message=(f"Zone '{request.zone_id}' is outside covered monitoring zones."),
             http_status=422,
         )
 
@@ -74,6 +70,28 @@ def estimate_risk_for_zone(
             rainfall_mm_per_hour=request.rainfall_mm_per_hour,
             assumption=base_scenario.assumption,
         )
+        from floodlens_ml.io import load_verified_pilot_features
+
+        verified = load_verified_pilot_features(zone.id)
+        if verified is not None and zone.data_status == "verified":
+            features = FeatureInput(
+                elevation_m=verified.elevation_m,
+                local_relief_m=verified.local_relief_m,
+                slope_deg=verified.slope_deg,
+                flow_accumulation=verified.flow_accumulation,
+                rainfall_mm_per_hour=request.rainfall_mm_per_hour,
+            )
+            return calculate_risk_score(
+                features=features,
+                scenario=scenario,
+                config=config,
+                zone_id=zone.id,
+                locality=zone.name,
+                coordinates=zone.coordinates,
+                data_status="available",
+                sources=zone.sources,
+            )
+
         empty_features = FeatureInput(
             elevation_m=None,
             local_relief_m=None,
@@ -92,6 +110,4 @@ def estimate_risk_for_zone(
             sources=zone.sources,
         )
 
-    return evaluate_candidate_zone(
-        zone, config, scenario_id=request.scenario_id
-    )
+    return evaluate_candidate_zone(zone, config, scenario_id=request.scenario_id)

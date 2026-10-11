@@ -171,6 +171,20 @@ export async function fetchWeatherForecast(
   const precipitations = raw.hourly.precipitation;
   const rains = raw.hourly.rain || [];
 
+  if (times.length === 0) {
+    throw new WeatherServiceError(
+      "Open-Meteo response returned empty hourly forecast array.",
+      "PARSE_ERROR"
+    );
+  }
+
+  if (times.length !== precipitations.length) {
+    throw new WeatherServiceError(
+      `Open-Meteo response array length mismatch: ${times.length} timestamps vs ${precipitations.length} precipitation points.`,
+      "PARSE_ERROR"
+    );
+  }
+
   const items: HourlyForecastItem[] = [];
   let sum24 = 0;
   let sum72 = 0;
@@ -178,8 +192,11 @@ export async function fetchWeatherForecast(
   let peakTime: string | null = null;
 
   for (let i = 0; i < times.length; i++) {
-    const p = typeof precipitations[i] === "number" ? precipitations[i] : 0;
-    const r = typeof rains[i] === "number" ? rains[i] : p;
+    const rawP = precipitations[i];
+    const rawR = rains[i];
+    // Sanitize: ensure non-negative, finite numbers (mm)
+    const p = typeof rawP === "number" && Number.isFinite(rawP) && rawP >= 0 ? rawP : 0;
+    const r = typeof rawR === "number" && Number.isFinite(rawR) && rawR >= 0 ? rawR : p;
     const timeIso = times[i];
 
     if (i < 24) {

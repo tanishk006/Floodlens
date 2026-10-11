@@ -1,5 +1,4 @@
-"""Input loading, prerequisite verification, and zone catalog management."""
-
+import json
 from pathlib import Path
 from typing import Any
 
@@ -9,6 +8,10 @@ from floodlens_ml.schemas import (
     DataSourceProvenance,
     FeatureInput,
     StrictSchema,
+)
+
+PROCESSED_DATA_DIR = (
+    Path(__file__).resolve().parent.parent.parent / "data" / "processed"
 )
 
 
@@ -79,15 +82,42 @@ def validate_pipeline_prerequisites(
     )
 
 
+def load_verified_pilot_features(zone_id: str) -> FeatureInput | None:
+    """Load verified terrain features from processed provenance record if available.
+
+    Returns FeatureInput with terrain features populated and rainfall=0.0,
+    or None if the zone has no verified terrain data.
+    """
+    if zone_id != "zone-uttar-pradesh":
+        return None
+
+    provenance_path = PROCESSED_DATA_DIR / "pilot_uttar_pradesh_provenance.json"
+    if not provenance_path.is_file():
+        return None
+
+    try:
+        with open(provenance_path, "r", encoding="utf-8") as f:
+            data = json.load(f)
+        tf = data.get("terrain_features", {})
+        return FeatureInput(
+            elevation_m=float(tf["elevation_m"]),
+            local_relief_m=float(tf["local_relief_m"]),
+            slope_deg=float(tf["slope_deg"]),
+            flow_accumulation=float(tf["flow_accumulation"]),
+            rainfall_mm_per_hour=0.0,
+        )
+    except Exception:
+        return None
+
+
 def get_candidate_monitoring_zones() -> list[CandidateZone]:
     """Return catalog of ten candidate Indian monitoring zones.
 
     Scientific disclaimer:
     The ten states correspond to candidate monitoring zones identified for the
-    prototype. The supplied historical million-hectare figures have not been
-    verified against an authoritative source and are NOT used as risk scores
-    or training labels. Data status is strictly set to `insufficient_data`
-    until real, documented DEMs and ground observations are connected.
+    prototype. The pilot zone (Uttar Pradesh) is backed by real, verified
+    Copernicus GLO-30 DEM terrain measurements. The remaining nine zones declare
+    `insufficient_data` until real DEMs and ground observations are connected.
     Coordinates are formatted as [longitude, latitude].
     """
     candidates = [
@@ -153,24 +183,73 @@ def get_candidate_monitoring_zones() -> list[CandidateZone]:
         ),
     ]
 
+    provenance_path = PROCESSED_DATA_DIR / "pilot_uttar_pradesh_provenance.json"
+    pilot_provenance_data = None
+    if provenance_path.is_file():
+        try:
+            with open(provenance_path, "r", encoding="utf-8") as f:
+                pilot_provenance_data = json.load(f)
+        except Exception:
+            pilot_provenance_data = None
+
     zones: list[CandidateZone] = []
     for zone_id, name, state, coords in candidates:
-        zones.append(
-            CandidateZone(
-                id=zone_id,
-                name=name,
-                state=state,
-                coordinates=coords,
-                aoi_bbox=None,
-                data_status="insufficient_data",
-                sources=[],
-                notes=(
-                    "Candidate monitoring zone. The supplied million-hectare "
-                    "figure is unverified and not treated as a flood score. "
-                    "Local DEM and ground observations are currently absent."
-                ),
+        if zone_id == "zone-uttar-pradesh" and pilot_provenance_data is not None:
+            dem_info = pilot_provenance_data.get("dataset_provenance", {})
+            tf = pilot_provenance_data.get("terrain_features", {})
+            zones.append(
+                CandidateZone(
+                    id=zone_id,
+                    name=name,
+                    state=state,
+                    coordinates=coords,
+                    aoi_bbox=(80.0, 26.0, 81.0, 27.0),
+                    data_status="verified",
+                    sources=[
+                        DataSourceProvenance(
+                            name=dem_info.get("dataset_name", "Copernicus DEM GLO-30"),
+                            url=dem_info.get("source_url"),
+                            accessed_at="2026-10-11",
+                            licence=dem_info.get(
+                                "licence", "Open Access Public Dataset"
+                            ),
+                            role="elevation",
+                            spatial_resolution=dem_info.get(
+                                "spatial_resolution", "1 arc-second (~30m)"
+                            ),
+                            notes=(
+                                "Verified 30m DSM terrain measurements. "
+                                f"Elevation: {tf.get('elevation_m')}m, "
+                                f"Slope: {tf.get('slope_deg')} deg, "
+                                f"Local Relief: {tf.get('local_relief_m')}m, "
+                                f"Flow Acc: {tf.get('flow_accumulation')} cells."
+                            ),
+                        )
+                    ],
+                    notes=(
+                        "Verified pilot monitoring zone with genuine Copernicus "
+                        "GLO-30 DEM measurements. Hydrological processing conducted "
+                        "via D8 routing and Priority-Flood depression conditioning."
+                    ),
+                )
             )
-        )
+        else:
+            zones.append(
+                CandidateZone(
+                    id=zone_id,
+                    name=name,
+                    state=state,
+                    coordinates=coords,
+                    aoi_bbox=None,
+                    data_status="insufficient_data",
+                    sources=[],
+                    notes=(
+                        "Candidate monitoring zone. The supplied million-hectare "
+                        "figure is unverified and not treated as a flood score. "
+                        "Local DEM and ground observations are currently absent."
+                    ),
+                )
+            )
     return zones
 
 

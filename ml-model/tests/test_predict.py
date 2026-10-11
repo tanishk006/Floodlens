@@ -70,17 +70,37 @@ def test_invalid_scenario_id_raises_value_error(
         get_scenario_by_id(repo_config, "nonexistent")
 
 
-def test_evaluate_candidate_zone_returns_insufficient_data(
+def test_evaluate_pilot_zone_returns_verified_score(
     repo_config: FloodlensConfig,
 ) -> None:
     zones = get_candidate_monitoring_zones()
-    zone_up = zones[0]
+    zone_up = next(z for z in zones if z.id == "zone-uttar-pradesh")
 
     result = evaluate_candidate_zone(zone_up, repo_config, scenario_id="moderate")
 
     assert result.zone_id == zone_up.id
     assert result.locality == zone_up.name
     assert result.coordinates == zone_up.coordinates
+    assert result.risk_index is not None
+    assert 0.0 <= result.risk_index <= 100.0
+    assert result.risk_category == "low"
+    assert result.data_quality.status == "available"
+    assert result.is_probability is False
+    assert len(result.factors) == 5
+    assert all(f.available is True for f in result.factors)
+
+
+def test_evaluate_candidate_zone_returns_insufficient_data(
+    repo_config: FloodlensConfig,
+) -> None:
+    zones = get_candidate_monitoring_zones()
+    zone_bihar = next(z for z in zones if z.id == "zone-bihar")
+
+    result = evaluate_candidate_zone(zone_bihar, repo_config, scenario_id="moderate")
+
+    assert result.zone_id == zone_bihar.id
+    assert result.locality == zone_bihar.name
+    assert result.coordinates == zone_bihar.coordinates
     assert result.risk_index is None
     assert result.risk_category == "insufficient_data"
     assert result.data_quality.status == "insufficient_data"

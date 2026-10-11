@@ -40,9 +40,7 @@ STANDARD_LIMITATIONS: list[str] = [
 ]
 
 
-def normalize_low_elevation(
-    elevation_m: float, bounds: tuple[float, float]
-) -> float:
+def normalize_low_elevation(elevation_m: float, bounds: tuple[float, float]) -> float:
     """Normalize elevation to relative susceptibility in [0.0, 1.0].
 
     Lower elevations (closer to minimum baseline) are more susceptible.
@@ -55,9 +53,7 @@ def normalize_low_elevation(
     return (max_b - elevation_m) / (max_b - min_b)
 
 
-def normalize_local_relief(
-    relief_m: float, bounds: tuple[float, float]
-) -> float:
+def normalize_local_relief(relief_m: float, bounds: tuple[float, float]) -> float:
     """Normalize local relief to relative susceptibility in [0.0, 1.0].
 
     Assumes lower local relief indicates flatter topography or depressions
@@ -234,9 +230,7 @@ def calculate_risk_score(
             factors=factors,
             data_quality=DataQualityReport(
                 status="insufficient_data",
-                missing_inputs=[
-                    f"Missing feature: {feat}" for feat in missing
-                ],
+                missing_inputs=[f"Missing feature: {feat}" for feat in missing],
                 warnings=[
                     "Score cannot be calculated because required terrain "
                     "features are not available."
