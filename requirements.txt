@@ -1,0 +1,35 @@
+# ==============================================================================
+# FloodLens - Root Requirements
+# AI-Assisted, Terrain-Aware Flood-Risk Intelligence & Decision Support Platform
+# ==============================================================================
+
+# Backend API & Web Server
+fastapi>=0.115.0
+uvicorn>=0.34.0
+pydantic>=2.11.0
+pydantic-settings>=2.9.0
+python-dotenv>=1.1.0
+httpx>=0.28.0
+
+# Hydrology, Geospatial Analysis & Scientific Computing
+numpy>=2.0.0
+scipy>=1.15.0
+pandas>=2.2.0
+geopandas>=1.0.0
+shapely>=2.1.0
+rasterio>=1.4.0
+scikit-learn>=1.6.0
+PyYAML>=6.0.0
+tifffile>=2024.5.10
+imagecodecs>=2024.1.1
+
+# Cloud & Storage (AWS S3)
+boto3>=1.38.0
+moto[s3]>=5.1.0
+
+# Testing & Code Quality
+pytest>=8.4.0
+ruff>=0.12.0
+
+# FloodLens ML Package (Local Editable Install)
+-e ./ml-model

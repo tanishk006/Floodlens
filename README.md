@@ -147,6 +147,16 @@ py -3.13 -m floodlens_ml.data_pipeline --all
 Outputs are deterministically saved to `ml-model/data/processed/zone-<id>_provenance.json` (and `pilot_uttar_pradesh_provenance.json`).
 
 ### 5. Running the Application Locally
+
+#### Quick Start (Windows):
+Double-click or run from the repository root:
+```bat
+run.bat    # Launches backend & frontend, checks dependencies, and opens browser
+stop.bat   # Gracefully terminates all backend and frontend services
+```
+*(You can also use `start.bat` as an alias for `run.bat`).*
+
+#### Manual / Multi-terminal:
 In terminal 1 (FastAPI backend):
 ```bash
 cd backend

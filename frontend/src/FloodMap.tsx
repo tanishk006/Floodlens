@@ -33,7 +33,18 @@ const INDIA_CENTER: [number, number] = [79.5, 22.8];
 const INDIA_ZOOM = 4.4;
 const FLY_ZOOM = 6.2;
 
-const CARTO_API_KEY = (import.meta.env.VITE_CARTO_API_KEY as string | undefined)?.trim();
+const DEFAULT_CARTO_API_KEY = "cb1_4ha8_1_dba59ab8d3b886f6b84455d8";
+const RAW_CARTO_API_KEY = (import.meta.env.VITE_CARTO_API_KEY as string | undefined)
+  ?.trim()
+  .replace(/^["']|["']$/g, "")
+  .trim();
+
+const CARTO_API_KEY =
+  RAW_CARTO_API_KEY &&
+  RAW_CARTO_API_KEY !== "your_carto_api_key_here" &&
+  !RAW_CARTO_API_KEY.includes("your_carto_api_key")
+    ? RAW_CARTO_API_KEY
+    : DEFAULT_CARTO_API_KEY;
 
 /**
  * Builds the MapLibre style specification implementing:
@@ -47,7 +58,8 @@ function createOptionBDarkStyle(
   initialGeoJson: FeatureCollection,
   selectedZoneId: string | null
 ): StyleSpecification {
-  const keyParam = apiKey ? `?key=${encodeURIComponent(apiKey)}` : "";
+  const effectiveKey = (apiKey?.trim() || DEFAULT_CARTO_API_KEY).replace(/^["']|["']$/g, "").trim();
+  const keyParam = effectiveKey ? `?key=${encodeURIComponent(effectiveKey)}` : "";
 
   return {
     version: 8,
