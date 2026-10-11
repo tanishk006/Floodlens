@@ -22,8 +22,8 @@ export default function Methodology({ riskResult }: MethodologyProps) {
       weight: 0.25,
       description:
         "Topographic elevation susceptibility. Normalized inversely across bounds [0.0, 100.0 m] (lower ground = higher index).",
-      dataStatus: "DEM Pending (Copernicus 30m)",
-      statusTone: "neutral" as const,
+      dataStatus: "Copernicus DEM GLO-30 (30m)",
+      statusTone: "accent" as const,
     },
     {
       name: "Flow Accumulation",
@@ -31,8 +31,8 @@ export default function Methodology({ riskResult }: MethodologyProps) {
       weight: 0.20,
       description:
         "Upslope contributing area computed via hydrologically conditioned D8 flow routing across bounds [0.0, 1000.0].",
-      dataStatus: "DEM Derivative Pending",
-      statusTone: "neutral" as const,
+      dataStatus: "Copernicus DEM GLO-30 / D8 Routing",
+      statusTone: "accent" as const,
     },
     {
       name: "Local Relief",
@@ -40,8 +40,8 @@ export default function Methodology({ riskResult }: MethodologyProps) {
       weight: 0.15,
       description:
         "Neighborhood elevation difference (elevation range within 100m radius) across bounds [0.0, 10.0 m]. Flatter local relief indicates ponding depressions.",
-      dataStatus: "DEM Derivative Pending",
-      statusTone: "neutral" as const,
+      dataStatus: "Copernicus DEM GLO-30 (100m window)",
+      statusTone: "accent" as const,
     },
     {
       name: "Slope",
@@ -49,8 +49,8 @@ export default function Methodology({ riskResult }: MethodologyProps) {
       weight: 0.10,
       description:
         "Terrain gradient in degrees across bounds [0.0, 30.0°]. Flatter slopes reduce runoff velocity and impede gravity drainage.",
-      dataStatus: "DEM Derivative Pending",
-      statusTone: "neutral" as const,
+      dataStatus: "Copernicus DEM GLO-30 (Gradient)",
+      statusTone: "accent" as const,
     },
   ];
 

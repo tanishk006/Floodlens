@@ -26,6 +26,7 @@ export default function App() {
 
   // Risk result state
   const [riskResult, setRiskResult] = useState<RiskScoreResult | null>(null);
+  const [zoneRisks, setZoneRisks] = useState<Record<string, RiskScoreResult>>({});
   const [isEstimating, setIsEstimating] = useState(false);
 
   const loadInitialData = useCallback(async () => {
@@ -62,7 +63,7 @@ export default function App() {
     loadInitialData();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Fetch risk estimate when zone or scenario changes
+  // Fetch risk estimate for active zone when zone or scenario changes
   useEffect(() => {
     if (!selectedZoneId) return;
 
@@ -79,6 +80,7 @@ export default function App() {
         });
         if (!cancelled) {
           setRiskResult(result);
+          setZoneRisks((prev) => ({ ...prev, [selectedZoneId]: result }));
           setBackendError(null);
         }
       } catch (err) {
@@ -95,8 +97,48 @@ export default function App() {
     };
 
     fetchEstimate();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [selectedZoneId, scenario, customRainfall]);
+
+  // Concurrently fetch risk estimates across all candidate zones for regional shading
+  useEffect(() => {
+    if (zones.length === 0) return;
+
+    let cancelled = false;
+    const fetchAllRisks = async () => {
+      try {
+        const promises = zones.map((z) =>
+          estimateRisk({
+            zone_id: z.id,
+            scenario_id: scenario,
+            ...(customRainfall !== null && customRainfall >= 0
+              ? { rainfall_mm_per_hour: customRainfall }
+              : {}),
+          }).catch(() => null)
+        );
+
+        const results = await Promise.all(promises);
+        if (cancelled) return;
+
+        const map: Record<string, RiskScoreResult> = {};
+        results.forEach((res) => {
+          if (res?.zone_id) {
+            map[res.zone_id] = res;
+          }
+        });
+        setZoneRisks((prev) => ({ ...prev, ...map }));
+      } catch {
+        // Soft fallback
+      }
+    };
+
+    fetchAllRisks();
+    return () => {
+      cancelled = true;
+    };
+  }, [zones, scenario, customRainfall]);
 
   const selectedZone = zones.find((z) => z.id === selectedZoneId) ?? null;
 
@@ -126,6 +168,7 @@ export default function App() {
             customRainfall={customRainfall}
             onSetCustomRainfall={setCustomRainfall}
             riskResult={riskResult}
+            zoneRisks={zoneRisks}
             isEstimating={isEstimating}
             isLoadingZones={isLoadingZones}
             backendError={backendError}

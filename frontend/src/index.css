@@ -83,7 +83,10 @@
     --accent-emphasis: #ffc300;
     --accent-text: #fff3cc;
     --warning-primary: #bb4111;
-    --warning-soft: #5d2109;
+    --severity-low: #94856b;
+    --severity-moderate: #cc9c00;
+    --severity-high: #bb4111;
+    --severity-unavailable: #6a6762;
     --focus-ring: #ffcf33;
 
     /* Legacy CSS Variable Compatibility */

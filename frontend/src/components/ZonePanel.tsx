@@ -124,9 +124,9 @@ function StatusBadge({ status }: { status: string }) {
   };
 
   const labels: Record<string, string> = {
-    verified: "Verified",
+    verified: "Verified DEM",
     illustrative: "Illustrative",
-    insufficient_data: "No Data",
+    insufficient_data: "DEM Pending",
   };
 
   return (

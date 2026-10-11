@@ -8,3 +8,8 @@ interface ImportMetaEnv {
 interface ImportMeta {
   readonly env: ImportMetaEnv;
 }
+
+declare module "*.geojson" {
+  const content: import("geojson").FeatureCollection;
+  export default content;
+}

@@ -23,6 +23,7 @@ interface ExplorerProps {
   customRainfall: number | null;
   onSetCustomRainfall: (v: number | null) => void;
   riskResult: RiskScoreResult | null;
+  zoneRisks?: Record<string, RiskScoreResult>;
   isEstimating: boolean;
   isLoadingZones: boolean;
   backendError: string | null;
@@ -40,6 +41,7 @@ export default function Explorer({
   customRainfall,
   onSetCustomRainfall,
   riskResult,
+  zoneRisks = {},
   isEstimating,
   isLoadingZones,
   backendError,
@@ -71,6 +73,8 @@ export default function Explorer({
             zones={zones}
             selectedZoneId={selectedZoneId}
             onSelectZone={onSelectZone}
+            zoneRisks={zoneRisks}
+            isEstimating={isEstimating}
           />
         ) : (
           <Suspense
