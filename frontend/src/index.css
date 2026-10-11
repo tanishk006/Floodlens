@@ -2,42 +2,180 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --color-paper: theme("colors.paper");
-  --color-rule: theme("colors.rule");
-  --color-accent: theme("colors.accent");
-  --color-risk-low: theme("colors.risk.low");
-  --color-risk-moderate: theme("colors.risk.moderate");
-  --color-risk-high: theme("colors.risk.high");
-  --color-risk-severe: theme("colors.risk.severe");
+@layer base {
+  :root {
+    --color-surface: #0B1120;
+    --color-surface-raised: #111827;
+    --color-surface-overlay: #1A2332;
+    --color-surface-border: #1E293B;
+    --color-accent: #22D3EE;
+    --color-accent-dim: #0EA5C9;
+    --color-text-primary: #F1F5F9;
+    --color-text-secondary: #94A3B8;
+    --color-risk-low: #34D399;
+    --color-risk-moderate: #FBBF24;
+    --color-risk-high: #F97316;
+    --color-risk-severe: #EF4444;
+    --color-risk-insufficient: #64748B;
+  }
 
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  font-size: 14px;
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    scroll-behavior: smooth;
+  }
+
+  body {
+    margin: 0;
+    background-color: var(--color-surface);
+    color: var(--color-text-primary);
+    font-family: "Inter", system-ui, sans-serif;
+    line-height: 1.5;
+  }
+
+  ::selection {
+    background-color: rgba(34, 211, 238, 0.25);
+    color: #F1F5F9;
+  }
+
+  /* Scrollbar styling */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: #1E293B;
+    border-radius: 3px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: #334155;
+  }
 }
 
-* {
-  box-sizing: border-box;
+@layer components {
+  /* Skeleton loading animation */
+  .skeleton {
+    background: linear-gradient(
+      90deg,
+      #1A2332 25%,
+      #243044 50%,
+      #1A2332 75%
+    );
+    background-size: 200% 100%;
+    animation: skeleton-pulse 1.5s ease-in-out infinite;
+    border-radius: 2px;
+  }
+
+  @keyframes skeleton-pulse {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+  }
+
+  /* Risk category badge colors */
+  .risk-badge-low {
+    background-color: rgba(52, 211, 153, 0.12);
+    color: #34D399;
+    border: 1px solid rgba(52, 211, 153, 0.25);
+  }
+
+  .risk-badge-moderate {
+    background-color: rgba(251, 191, 36, 0.12);
+    color: #FBBF24;
+    border: 1px solid rgba(251, 191, 36, 0.25);
+  }
+
+  .risk-badge-high {
+    background-color: rgba(249, 115, 22, 0.12);
+    color: #F97316;
+    border: 1px solid rgba(249, 115, 22, 0.25);
+  }
+
+  .risk-badge-severe {
+    background-color: rgba(239, 68, 68, 0.12);
+    color: #EF4444;
+    border: 1px solid rgba(239, 68, 68, 0.25);
+  }
+
+  .risk-badge-insufficient {
+    background-color: rgba(100, 116, 139, 0.12);
+    color: #94A3B8;
+    border: 1px solid rgba(100, 116, 139, 0.25);
+  }
 }
 
-body {
-  min-width: 320px;
-  min-height: 100vh;
-  margin: 0;
+/* MapLibre GL overrides */
+.maplibregl-ctrl-group {
+  background: #111827 !important;
+  border: 1px solid #1E293B !important;
+  border-radius: 4px !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3) !important;
 }
 
-button,
-a {
-  -webkit-tap-highlight-color: transparent;
+.maplibregl-ctrl-group button {
+  border-color: #1E293B !important;
 }
 
-button {
-  cursor: pointer;
+.maplibregl-ctrl-group button + button {
+  border-top: 1px solid #1E293B !important;
 }
 
-::selection {
-  background-color: theme("colors.water.1");
-  color: theme("colors.ink");
+.maplibregl-ctrl-group button:hover {
+  background-color: #1A2332 !important;
+}
+
+.maplibregl-ctrl-group button .maplibregl-ctrl-icon {
+  filter: invert(0.85);
+}
+
+.maplibregl-popup-content {
+  background: #111827 !important;
+  color: #F1F5F9 !important;
+  border: 1px solid #1E293B !important;
+  border-radius: 4px !important;
+  padding: 10px 14px !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4) !important;
+  font-family: "Inter", system-ui, sans-serif !important;
+  font-size: 12px !important;
+}
+
+.maplibregl-popup-anchor-bottom .maplibregl-popup-tip {
+  border-top-color: #111827 !important;
+}
+
+.maplibregl-popup-anchor-top .maplibregl-popup-tip {
+  border-bottom-color: #111827 !important;
+}
+
+.maplibregl-popup-close-button {
+  color: #94A3B8 !important;
+  font-size: 16px !important;
+}
+
+.maplibregl-popup-close-button:hover {
+  color: #22D3EE !important;
+  background: transparent !important;
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }

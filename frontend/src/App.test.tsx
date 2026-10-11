@@ -4,7 +4,6 @@ import App from "./App";
 import * as client from "./api/client";
 import type { RiskScoreResult, ZonesResponse } from "./api/types";
 
-// Mock MapLibre GL JS since WebGL is not available in JSDOM
 vi.mock("maplibre-gl", () => {
   function MockMap() {
     return {
@@ -13,6 +12,7 @@ vi.mock("maplibre-gl", () => {
       remove: vi.fn(),
       easeTo: vi.fn(),
       getZoom: vi.fn().mockReturnValue(4.2),
+      addControl: vi.fn(),
     };
   }
   function MockMarker() {
@@ -22,9 +22,22 @@ vi.mock("maplibre-gl", () => {
       remove: vi.fn(),
     };
   }
+  function MockNavigationControl() {
+    return {};
+  }
+  function MockPopup() {
+    return {
+      setLngLat: vi.fn().mockReturnThis(),
+      setHTML: vi.fn().mockReturnThis(),
+      addTo: vi.fn().mockReturnThis(),
+      remove: vi.fn(),
+    };
+  }
   return {
     Map: MockMap,
     Marker: MockMarker,
+    NavigationControl: MockNavigationControl,
+    Popup: MockPopup,
   };
 });
 
@@ -132,6 +145,22 @@ describe("FloodLens App Component", () => {
     });
     vi.spyOn(client, "getZones").mockResolvedValue(mockZonesData);
     vi.spyOn(client, "estimateRisk").mockResolvedValue(mockEstimateModerate);
+    vi.spyOn(globalThis, "fetch").mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: async () => ({
+        latitude: 26.85,
+        longitude: 80.95,
+        elevation: 120,
+        timezone: "Asia/Kolkata",
+        hourly_units: { time: "iso8601", precipitation: "mm", rain: "mm" },
+        hourly: {
+          time: ["2026-10-11T00:00", "2026-10-11T01:00"],
+          precipitation: [0.0, 4.5],
+          rain: [0.0, 4.5],
+        },
+      }),
+    } as Response);
   });
 
   afterEach(() => {
@@ -230,5 +259,20 @@ describe("FloodLens App Component", () => {
 
     expect(screen.getByText("Cannot connect to API server")).toBeDefined();
     expect(screen.getByRole("button", { name: "Reconnect" })).toBeDefined();
+  });
+
+  it("navigates to the Weather Intelligence view when tab is clicked", async () => {
+    render(<App />);
+
+    await waitFor(() => {
+      expect(screen.getByText("Weather Intelligence")).toBeDefined();
+    });
+
+    const weatherTab = screen.getByRole("button", { name: "Weather Intelligence" });
+    fireEvent.click(weatherTab);
+
+    await waitFor(() => {
+      expect(screen.getByText(/NWP ATMOSPHERIC FORCING INTELLIGENCE/i)).toBeDefined();
+    });
   });
 });
