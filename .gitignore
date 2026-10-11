@@ -18,3 +18,4 @@ __pycache__/
 .ruff_cache/
 *.egg-info/
 frontend/.env.example
+
